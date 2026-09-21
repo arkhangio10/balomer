@@ -1,0 +1,46 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+secrets/
+
+# Video: never commit match footage
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Datasets and model weights
+data/
+*.pt
+*.onnx
+*.engine
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# AWS CDK
+cdk.out/
+.cdk.staging/
+
+# Node
+node_modules/
+
+# Claude Code local overrides
+.claude/settings.local.json
+CLAUDE.local.md
+
+# OS
+.DS_Store
+Thumbs.db

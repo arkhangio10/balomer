@@ -1,0 +1,67 @@
+[project]
+name = "balomer"
+version = "0.1.0"
+description = "Live tactical analysis for amateur football, from one fixed camera to a Fire TV"
+requires-python = ">=3.12,<3.13"
+license = "Apache-2.0"
+dependencies = [
+    "balomer-agent",
+    "balomer-api",
+    "balomer-infra",
+    "balomer-vision",
+]
+
+[dependency-groups]
+dev = [
+    "mypy==2.3.1",
+    "pre-commit==4.6.2",
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "ruff==0.16.8",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["services/*", "infra"]
+
+[tool.uv.sources]
+balomer-agent = { workspace = true }
+balomer-api = { workspace = true }
+balomer-infra = { workspace = true }
+balomer-vision = { workspace = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["ANN", "B", "E", "F", "I", "SIM", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/*" = ["ANN"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+explicit_package_bases = true
+mypy_path = [
+    "services/api/src",
+    "services/vision/src",
+    "services/agent/src",
+    "infra/src",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["services", "infra"]
+addopts = "--cov --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["balomer_api", "balomer_vision", "balomer_agent", "balomer_infra"]
+
+[tool.coverage.report]
+fail_under = 0
+
+[tool.commitizen]
+name = "cz_conventional_commits"
