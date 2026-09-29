@@ -1,16 +1,101 @@
 # Objectives
 
-> **Placeholder.** Paste the real objectives here. Nothing else in the repo is
-> allowed to invent them.
+Every spec, task and PR references at least one ID below. Work that serves no objective is out of scope.
 
-Every acceptance criterion in `specs/<feature>/requirements.md` links to one or
-more objective IDs from this file. Until this file has real IDs, `/spec` cannot
-finish a requirements document.
+## Mission
+Top clubs pay six figures a year for match analysis. Amateur coaches have no analyst at all. Balomer puts one camera above the pitch and a Fire TV in the dressing room, and delivers live tactical insight and a halftime game plan with no analyst required.
 
-## Format
+## Hackathon
+| ID | Objective | Target |
+|---|---|---|
+| H1 | Win Fire TV Track 1st place | Strong on all 4 criteria |
+| H2 | AWS Builder mini challenge | Documented Bedrock + AgentCore + Strands pipeline |
+| H3 | Open Source mini challenge | 1 merged or open contribution with tests |
+| H4 | Friction logs | 8+ complete entries |
+| H5 | Submit early | Submitted by Oct 22, 2026 |
 
-Each objective gets a stable ID that never changes once it is used in a spec.
+## Product (Tier 1)
+| ID | Objective | Target |
+|---|---|---|
+| P1 | Live player and ball tracking | 15+ fps on the edge |
+| P2 | Live 2D radar on Fire TV | Camera-to-TV latency max 2 s |
+| P3 | Live stats: possession, shape, line height, compactness | Refresh max 5 s |
+| P4 | Alerts | At 15', 30', 60', 75' |
+| P5 | Halftime report | Within 60 s of 45': top 3 problems, 1 adjustment each |
+| P6 | Full-time report | Match story, key metrics, training focus |
+| P7 | Evidence-based recommendations | 100% cite at least one match metric (schema-enforced) |
+| P8 | Replay as live | A recorded file runs through the live pipeline |
+| P9 | Pro mode (first cut candidate) | One SkillCorner match end to end, radar only |
+| P10 | D-pad navigation | Every screen usable with the D-pad alone |
 
-| ID | Objective | Why it matters | How we know it is met |
-|----|-----------|----------------|-----------------------|
-| OBJ-1 | ... | ... | ... |
+## Computer vision
+Measured first on SoccerTrack v2 annotations, then on own footage when available. Revise targets after the first baseline.
+
+| ID | Objective | Target |
+|---|---|---|
+| V1 | Player detection recall | 90%+ |
+| V2 | Team assignment | 95%+ with contrasting bibs |
+| V3 | Ball detection | 70%+ of visible frames, gaps interpolated |
+| V4 | Pitch position error | Max 1 m at the center |
+
+## Engineering
+| ID | Objective | Target |
+|---|---|---|
+| E1 | Monorepo | apps/, services/, packages/, infra/, specs/, docs/ |
+| E2 | CI | On every PR, main always green |
+| E3 | Coverage | 80%+ on metrics engine and agent contracts |
+| E4 | Versioning | Conventional Commits, squash merges, tags v0.1.0 to v0.4.0, v1.0.0 at submission |
+| E5 | Infrastructure as code | 100% of AWS resources in CDK |
+| E6 | Judge setup | Demo runs from the README in 15 min |
+
+## Security and privacy
+| ID | Objective | Target |
+|---|---|---|
+| S1 | No secrets in git | gitleaks, 0 findings |
+| S2 | CI to AWS | GitHub Actions via OIDC only |
+| S3 | Least privilege | One IAM role per service, no wildcards |
+| S4 | Video at the edge | Video stays at the edge by default |
+| S5 | S3 | Private, encrypted, presigned URLs only |
+| S6 | Consent | Signed consent from every filmed player |
+| S7 | Guardrails | Bedrock Guardrails on every agent response |
+| S8 | Dependencies | 0 high or critical vulnerabilities |
+
+## Business
+| ID | Objective | Target |
+|---|---|---|
+| B1 | Customer discovery | 5 academy coaches + 3 pitch owners interviewed by Oct 11 |
+| B2 | Traction | 1 pilot agreement or letter of intent |
+
+## Submission
+| ID | Objective | Target |
+|---|---|---|
+| D1 | Demo video | Max 2:50, public on YouTube, running on VVD or device |
+| D2 | Description | Plus product feedback for every tool |
+| D3 | Public repo | Apache-2.0 visible in About |
+| D4 | Friction log | Plus feature requests |
+| D5 | Open Source | Contribution URL + description |
+
+## Data and content rules
+- Live mode and demo video: own 7-a-side footage only (adults, signed consent, S6).
+- CV development and evaluation: SoccerTrack v2 (CC BY 4.0, attributed).
+- Pro mode: SkillCorner Open Data (attributed).
+- No broadcast, YouTube or league footage anywhere, including tests.
+- No third party trademarks, crests or competitor names in the app or video. Teams are "Home" and "Away".
+
+## Out of scope until Oct 23
+Broadcast analysis, other sports, multi-camera, voice, full phone app, Android TV and web ports, WhatsApp delivery.
+
+## Milestones (revised Sep 29)
+| Tag | Date | Scope |
+|---|---|---|
+| v0.1.0 | Oct 4 | Walking skeleton: synthetic tracking → IoT Core → DynamoDB → WebSocket → Vega radar screen. CI green on GitHub. |
+| v0.2.0 | Oct 11 | CV baseline on SoccerTrack v2 (V1-V4), replay as live (P8), metrics engine (P3) |
+| v0.3.0 | Oct 16 | Agent on AgentCore, halftime report (P5, P7), alerts (P4) |
+| v0.4.0 | Oct 19 | Full-time report (P6), Open Source contribution (H3), pro mode (P9, cut first), D-pad polish (P10) |
+| v1.0.0 | Oct 22 | Demo video, docs, submission (D1-D5) |
+
+## Key dates
+- Oct 4: Open Source target decision (Vega drawing library port vs kloppy)
+- Oct 11: B1 interviews done; own footage recorded or switch demo to SoccerTrack v2
+- Oct 21, 12:00 pm PT: AWS credits form closes
+- Oct 23, 12:00 pm PT: hard deadline

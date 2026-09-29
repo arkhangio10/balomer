@@ -9,8 +9,9 @@ As a **<role>**, I want **<capability>**, so that **<outcome>**.
 ## Acceptance criteria (EARS)
 
 Every criterion is testable and links to at least one objective ID from
-[docs/OBJECTIVES.md](../../docs/OBJECTIVES.md). A criterion with no objective
-does not belong in this spec.
+[docs/OBJECTIVES.md](../../docs/OBJECTIVES.md), such as `P3` or `S1` (pattern
+`^(H|P|V|E|S|B|D)\d+$`). A criterion with no objective does not belong in this
+spec.
 
 EARS patterns:
 
@@ -22,9 +23,9 @@ EARS patterns:
 
 | ID | Criterion | Objectives |
 |----|-----------|------------|
-| AC-1 | When `<trigger>`, the `<system>` shall `<response>`. | OBJ-? |
-| AC-2 | While `<state>`, the `<system>` shall `<response>`. | OBJ-? |
-| AC-3 | If `<condition>`, then the `<system>` shall `<response>`. | OBJ-? |
+| AC-1 | When `<trigger>`, the `<system>` shall `<response>`. | P? |
+| AC-2 | While `<state>`, the `<system>` shall `<response>`. | P? |
+| AC-3 | If `<condition>`, then the `<system>` shall `<response>`. | P? |
 
 ## Out of scope
 

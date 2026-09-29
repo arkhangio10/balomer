@@ -21,7 +21,9 @@ Then:
 3. Fill in `requirements.md`:
    - one user story
    - acceptance criteria in EARS form, each one testable
-   - every criterion linked to at least one objective ID from `docs/OBJECTIVES.md`
+   - every criterion linked to at least one objective ID from `docs/OBJECTIVES.md`,
+     written exactly as it appears there and matching `^(H|P|V|E|S|B|D)\d+$`
+     (e.g. `P3`, `S1`)
    - an explicit "out of scope" section
 4. Fill in `design.md`: components with real repo paths, the JSON Schema
    contracts this feature adds or changes, the sequence, the risks, and the
