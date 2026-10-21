@@ -21,8 +21,11 @@ repos:
       - id: check-added-large-files
         args: [--maxkb=1024]
       - id: check-yaml
+      # Vega generator output, kept byte-identical to the helloWorld template.
       - id: end-of-file-fixer
+        exclude: ^apps/tv/(\.eslintrc|\.gitignore|metro\.config\.js)$
       - id: trailing-whitespace
+        exclude: ^apps/tv/(\.eslintrc|\.gitignore|metro\.config\.js)$
 
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v4.18.0
