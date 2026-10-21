@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Alert",
+  "description": "A minute alert. The text comes from a template and holds no number; the evidence says which values to show.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "minute", "template_id", "text", "evidence"],
+  "properties": {
+    "type": { "const": "alert" },
+    "minute": { "type": "integer", "enum": [15, 30, 60, 75] },
+    "template_id": { "type": "string", "minLength": 1 },
+    "text": { "type": "string", "minLength": 1 },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "metrics.schema.json#/$defs/Evidence" }
+    }
+  }
+}

@@ -12,10 +12,10 @@ The order puts a moving radar on the TV first (T1–T5, tag `v0.1.0`), then the
 real match, metrics and alerts (T6–T9, `v0.2.0`), then the reports (T10–T11,
 `v0.3.0`), then the demo (T12, `v1.0.0`).
 
-- [ ] **T1 — Define the boundary schemas and generate the types**
+- [x] **T1 — Define the boundary schemas and generate the types**
   - Criteria: AC-1
   - Test: `packages/contracts/tests/test_schemas.py::test_examples_validate` — every example in `packages/contracts/examples/` validates; a report with two recommendations, a recommendation without evidence, evidence without a period, and an `ok` report with no recommendations are all rejected
-  - Done when: the seven schemas exist; `make contracts` regenerates `models.py` and `contracts.ts` with no diff; CI fails on a stale generated file
+  - Done when: the seven schemas exist; `make contracts` regenerates `models/` and `contracts.ts` with no diff; CI fails on a stale generated file
 
 - [ ] **T2 — Add the Vega app from the official generator**
   - Criteria: AC-11 (focus scaffolding), AC-12

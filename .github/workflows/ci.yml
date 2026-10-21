@@ -38,7 +38,14 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Type check
-        run: uv run mypy services infra
+        run: uv run mypy services packages infra
 
       - name: Test
         run: uv run pytest
+
+      - name: Check generated contracts are fresh
+        run: |
+          make contracts
+          git status --porcelain
+          git diff --exit-code
+          test -z "$(git status --porcelain)"

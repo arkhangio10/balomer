@@ -7,11 +7,24 @@ Python and TypeScript types are *generated* from those schemas. Never hand-write
 a type that mirrors a schema, and never edit generated output: change the schema
 and regenerate.
 
-Boundaries covered by these contracts:
+Boundaries covered by these contracts, in the local demo:
 
-- edge worker → AWS IoT Core (tracks, team assignment, pitch coordinates)
-- stored metric records in DynamoDB
-- agent input and output (evidence in, recommendations out)
-- API Gateway WebSocket → Fire TV app
+- edge (replayer) → API → Fire TV app, over WebSocket: every `message`
+- agent input (`metrics` snapshots) and output (`report`)
 
-Nothing lives here yet. Schemas arrive with the spec that needs them.
+## Layout
+
+| Path | What lives there |
+|------|------------------|
+| `schemas/` | The seven schemas. `message.schema.json` is the envelope over the other six. |
+| `examples/` | One valid example per message, checked by `tests/test_schemas.py`. |
+| `src/balomer_contracts/models/` | Generated Pydantic models. Import them from `balomer_contracts.models`. |
+| `../../apps/tv/src/contracts.ts` | Generated TypeScript types for the TV app. |
+
+## Regenerate
+
+```
+make contracts
+```
+
+CI regenerates both outputs and fails if they differ from what is committed.

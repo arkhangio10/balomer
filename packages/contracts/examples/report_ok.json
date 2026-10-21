@@ -1,0 +1,45 @@
+{
+  "type": "report",
+  "kind": "halftime",
+  "status": "ok",
+  "recommendations": [
+    {
+      "problem": "Away defended deep after the first quarter-hour and gave Home time on the ball.",
+      "adjustment": "Push the back line up together whenever the ball goes backwards.",
+      "evidence": [
+        {
+          "metric": "line_height",
+          "team": "away",
+          "period": { "kind": "block", "from_min": 15, "to_min": 30 }
+        }
+      ]
+    },
+    {
+      "problem": "Home stretched wide and left space between the lines.",
+      "adjustment": "Keep the far winger narrow while the ball is on the other flank.",
+      "evidence": [
+        {
+          "metric": "width",
+          "team": "home",
+          "period": { "kind": "half", "from_min": 0, "to_min": 45 }
+        },
+        {
+          "metric": "compactness",
+          "team": "home",
+          "period": { "kind": "half", "from_min": 0, "to_min": 45 }
+        }
+      ]
+    },
+    {
+      "problem": "Away lost the ball more often than Home in the first half.",
+      "adjustment": "Add a midfielder close to the ball carrier to offer a short pass.",
+      "evidence": [
+        {
+          "metric": "possession",
+          "team": "away",
+          "period": { "kind": "half", "from_min": 0, "to_min": 45 }
+        }
+      ]
+    }
+  ]
+}

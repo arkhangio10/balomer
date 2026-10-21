@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Frame",
+  "description": "Every player and the ball at one instant. Metres from the centre spot: x points to the right of the main camera, y to the near touchline.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "half", "clock_ms", "players", "ball", "possession"],
+  "properties": {
+    "type": { "const": "frame" },
+    "half": { "$ref": "#/$defs/Half" },
+    "clock_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Match clock in milliseconds. The second half starts at 2700000."
+    },
+    "players": { "type": "array", "items": { "$ref": "#/$defs/Player" } },
+    "ball": { "anyOf": [{ "$ref": "#/$defs/Point" }, { "type": "null" }] },
+    "possession": { "anyOf": [{ "$ref": "#/$defs/Team" }, { "type": "null" }] }
+  },
+  "$defs": {
+    "Half": { "type": "integer", "enum": [1, 2] },
+    "Team": { "type": "string", "enum": ["home", "away"] },
+    "Point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "Player": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "team", "role", "x", "y"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "Stable across both halves." },
+        "team": { "$ref": "#/$defs/Team" },
+        "role": { "type": "string", "enum": ["player", "goalkeeper"] },
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    }
+  }
+}

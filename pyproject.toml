@@ -7,12 +7,14 @@ license = "Apache-2.0"
 dependencies = [
     "balomer-agent",
     "balomer-api",
+    "balomer-contracts",
     "balomer-infra",
     "balomer-vision",
 ]
 
 [dependency-groups]
 dev = [
+    "datamodel-code-generator==0.86.0",
     "mypy==2.3.1",
     "pre-commit==4.6.2",
     "pytest==9.1.1",
@@ -24,11 +26,12 @@ dev = [
 package = false
 
 [tool.uv.workspace]
-members = ["services/*", "infra"]
+members = ["services/*", "packages/contracts", "infra"]
 
 [tool.uv.sources]
 balomer-agent = { workspace = true }
 balomer-api = { workspace = true }
+balomer-contracts = { workspace = true }
 balomer-infra = { workspace = true }
 balomer-vision = { workspace = true }
 
@@ -41,6 +44,7 @@ select = ["ANN", "B", "E", "F", "I", "SIM", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/*" = ["ANN"]
+"packages/contracts/src/balomer_contracts/models/*" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -50,15 +54,16 @@ mypy_path = [
     "services/api/src",
     "services/vision/src",
     "services/agent/src",
+    "packages/contracts/src",
     "infra/src",
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["services", "infra"]
+testpaths = ["services", "packages", "infra"]
 addopts = "--cov --cov-report=term-missing"
 
 [tool.coverage.run]
-source = ["balomer_api", "balomer_vision", "balomer_agent", "balomer_infra"]
+source = ["balomer_api", "balomer_vision", "balomer_agent", "balomer_contracts", "balomer_infra"]
 
 [tool.coverage.report]
 fail_under = 0

@@ -26,7 +26,7 @@ replayer (services/vision) ──ws /ws/edge──▶ API (services/api, :8080) 
 | Component | Path | Change |
 |-----------|------|--------|
 | Schemas | `packages/contracts/schemas/*.schema.json` | New |
-| Python models | `packages/contracts/src/balomer_contracts/models.py` | New, generated. `packages/contracts` joins the uv workspace as `balomer-contracts`. |
+| Python models | `packages/contracts/src/balomer_contracts/models/` | New, generated: one module per schema, re-exported by `balomer_contracts.models`. Schemas that reference each other force a package instead of one file. `packages/contracts` joins the uv workspace as `balomer-contracts`. |
 | TS types | `apps/tv/src/contracts.ts` | New, generated |
 | Codegen | `Makefile` target `contracts` | New. CI fails if generated files differ from a fresh run. |
 | Ingest | `services/vision/src/balomer_vision/soccertrack.py` | New. Streams GSR JSON with `ijson` and writes replay JSONL to `data/replay/`. |
@@ -229,7 +229,9 @@ Each one is stated in the PR that adds it.
 - `strands-agents` (agent): the agent SDK the architecture names, covering H2.
 - `pydantic` (contracts): the generated models.
 - `datamodel-code-generator` (dev): Python codegen.
-- `json-schema-to-typescript` (tv, dev): TS codegen.
+- `json-schema-to-typescript` (tv, dev): TS codegen. Until T2 adds
+  `apps/tv/package.json`, `make contracts` runs it with `npx` at a pinned
+  version.
 
 ## Risks
 

@@ -1,0 +1,18 @@
+{
+  "type": "alert",
+  "minute": 30,
+  "template_id": "line_dropped",
+  "text": "Away's line dropped since the first quarter-hour — they defend deeper than Home.",
+  "evidence": [
+    {
+      "metric": "line_height",
+      "team": "away",
+      "period": { "kind": "block", "from_min": 0, "to_min": 15 }
+    },
+    {
+      "metric": "line_height",
+      "team": "away",
+      "period": { "kind": "block", "from_min": 15, "to_min": 30 }
+    }
+  ]
+}
