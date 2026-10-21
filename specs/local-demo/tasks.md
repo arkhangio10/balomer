@@ -17,7 +17,7 @@ real match, metrics and alerts (T6–T9, `v0.2.0`), then the reports (T10–T11,
   - Test: `packages/contracts/tests/test_schemas.py::test_examples_validate` — every example in `packages/contracts/examples/` validates; a report with two recommendations, a recommendation without evidence, evidence without a period, and an `ok` report with no recommendations are all rejected
   - Done when: the seven schemas exist; `make contracts` regenerates `models/` and `contracts.ts` with no diff; CI fails on a stale generated file
 
-- [ ] **T2 — Add the Vega app from the official generator**
+- [x] **T2 — Add the Vega app from the official generator**
   - Criteria: AC-11 (focus scaffolding), AC-12
   - Test: `apps/tv/test/App.spec.tsx` — the generated template test passes in the new CI `tv` job
   - Done when: `apps/tv` is the unmodified `helloWorld` output (package id `com.balomer.tv`), and CI runs `npm ci`, `jest`, `tsc --noEmit` and `eslint` on it

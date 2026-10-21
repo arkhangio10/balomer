@@ -48,3 +48,29 @@ jobs:
           make contracts
           git diff --exit-code -- packages/contracts/src apps/tv/src
           test -z "$(git status --porcelain -- packages/contracts/src apps/tv/src)"
+
+  tv:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/tv
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/tv/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test -- --ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
