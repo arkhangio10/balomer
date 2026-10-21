@@ -1,0 +1,28 @@
+{
+  "type": "metrics",
+  "half": 1,
+  "clock_ms": 1800000,
+  "period": { "kind": "block", "from_min": 15, "to_min": 30 },
+  "teams": {
+    "home": {
+      "possession": 54.2,
+      "line_height": 31.5,
+      "width": 44.8,
+      "depth": 36.2,
+      "compactness": 1621.8,
+      "attack_direction": 1,
+      "line_x": -21.0,
+      "block": { "x_min": -24.1, "x_max": 12.1, "y_min": -22.0, "y_max": 22.8 }
+    },
+    "away": {
+      "possession": 45.8,
+      "line_height": 24.0,
+      "width": 40.2,
+      "depth": 30.5,
+      "compactness": 1226.1,
+      "attack_direction": -1,
+      "line_x": 28.5,
+      "block": { "x_min": 0.5, "x_max": 31.0, "y_min": -19.6, "y_max": 20.6 }
+    }
+  }
+}

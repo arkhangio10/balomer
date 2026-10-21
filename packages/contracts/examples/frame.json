@@ -1,0 +1,13 @@
+{
+  "type": "frame",
+  "half": 1,
+  "clock_ms": 1800000,
+  "players": [
+    { "id": "h1", "team": "home", "role": "goalkeeper", "x": -48.2, "y": 1.5 },
+    { "id": "h7", "team": "home", "role": "player", "x": -3.1, "y": 10.4 },
+    { "id": "a1", "team": "away", "role": "goalkeeper", "x": 49.0, "y": -0.8 },
+    { "id": "a9", "team": "away", "role": "player", "x": -1.6, "y": 9.2 }
+  ],
+  "ball": { "x": -2.4, "y": 10.1 },
+  "possession": "home"
+}

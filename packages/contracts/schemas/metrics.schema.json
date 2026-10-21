@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Metrics",
+  "description": "Both teams' tactical metrics over one period, computed on the edge. The block and half snapshots are also the agent's input.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "half", "clock_ms", "period", "teams"],
+  "properties": {
+    "type": { "const": "metrics" },
+    "half": { "$ref": "frame.schema.json#/$defs/Half" },
+    "clock_ms": { "type": "integer", "minimum": 0 },
+    "period": { "$ref": "#/$defs/Period" },
+    "teams": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["home", "away"],
+      "properties": {
+        "home": { "$ref": "#/$defs/TeamMetrics" },
+        "away": { "$ref": "#/$defs/TeamMetrics" }
+      }
+    }
+  },
+  "$defs": {
+    "Period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "from_min", "to_min"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["rolling", "block", "half"] },
+        "from_min": { "type": "number", "minimum": 0 },
+        "to_min": { "type": "number", "minimum": 0 }
+      }
+    },
+    "MetricName": {
+      "type": "string",
+      "enum": ["possession", "line_height", "width", "depth", "compactness"]
+    },
+    "Evidence": {
+      "description": "A reference to one team's metric in one published snapshot. It never holds the number itself.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric", "team", "period"],
+      "properties": {
+        "metric": { "$ref": "#/$defs/MetricName" },
+        "team": { "$ref": "frame.schema.json#/$defs/Team" },
+        "period": { "$ref": "#/$defs/Period" }
+      }
+    },
+    "Block": {
+      "description": "The extent of the outfield players, in metres.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x_min", "x_max", "y_min", "y_max"],
+      "properties": {
+        "x_min": { "type": "number" },
+        "x_max": { "type": "number" },
+        "y_min": { "type": "number" },
+        "y_max": { "type": "number" }
+      }
+    },
+    "TeamMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "possession",
+        "line_height",
+        "width",
+        "depth",
+        "compactness",
+        "attack_direction",
+        "line_x",
+        "block"
+      ],
+      "properties": {
+        "possession": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Share of frames in possession, %."
+        },
+        "line_height": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Distance from the own goal line to the mean x of the four deepest outfield players, m."
+        },
+        "width": { "type": "number", "minimum": 0, "description": "Extent in y, m." },
+        "depth": { "type": "number", "minimum": 0, "description": "Extent in x, m." },
+        "compactness": { "type": "number", "minimum": 0, "description": "Width times depth, m²." },
+        "attack_direction": {
+          "type": "integer",
+          "enum": [1, -1],
+          "description": "Sign of the x the team attacks towards."
+        },
+        "line_x": { "type": "number", "description": "x of the defensive line, m." },
+        "block": { "$ref": "#/$defs/Block" }
+      }
+    }
+  }
+}

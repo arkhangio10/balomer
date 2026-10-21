@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Message",
+  "description": "Every message on the Balomer WebSockets, told apart by its type.",
+  "oneOf": [
+    { "$ref": "session.schema.json" },
+    { "$ref": "phase.schema.json" },
+    { "$ref": "frame.schema.json" },
+    { "$ref": "metrics.schema.json" },
+    { "$ref": "alert.schema.json" },
+    { "$ref": "report.schema.json" }
+  ]
+}
