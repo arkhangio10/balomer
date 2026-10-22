@@ -181,6 +181,12 @@ source = { editable = "infra" }
 name = "balomer-vision"
 version = "0.1.0"
 source = { editable = "services/vision" }
+dependencies = [
+    { name = "websockets" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "websockets", specifier = "==17.3" }]
 
 [[package]]
 name = "black"
