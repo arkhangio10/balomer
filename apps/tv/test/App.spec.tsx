@@ -3,16 +3,18 @@ import 'react-native';
 import {BackHandler} from '@amazon-devices/react-native-kepler';
 import {act, render, within} from '@testing-library/react-native';
 import * as React from 'react';
+import {StyleSheet} from 'react-native';
 
 import {App} from '../src/App';
 import type {
   Alert,
   Message,
   Metrics,
+  ReportUnavailable,
   Session,
   TeamMetrics,
 } from '../src/contracts';
-import {BANNER_OUT_MS} from '../src/theme';
+import {BANNER_OUT_MS, FADE_MS} from '../src/theme';
 
 // The preset's BackHandler mock has no `default`, which the package index reads.
 jest.mock(
@@ -72,6 +74,12 @@ const alert: Alert = {
       period: {kind: 'block', from_min: 0, to_min: 15},
     },
   ],
+};
+
+const report: ReportUnavailable = {
+  type: 'report',
+  kind: 'halftime',
+  status: 'unavailable',
 };
 
 const send = (message: Message) =>
@@ -135,5 +143,33 @@ describe('App', () => {
 
     screen.unmount();
     expect(removeBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('dims the radar at halftime, shows the report over it, and Back returns to the radar', () => {
+    const screen = render(<App />);
+    send(session);
+    const radarOpacity = () =>
+      StyleSheet.flatten(screen.getByTestId('radar').props.style).opacity;
+    send({type: 'phase', phase: 'end', half: 1});
+    act(() => {
+      jest.advanceTimersByTime(FADE_MS + 10);
+    });
+    expect(radarOpacity()).toBeCloseTo(0.3);
+    expect(screen.getByText('Analysing the first half…')).toBeTruthy();
+
+    send(report);
+    expect(screen.getByText('Halftime report')).toBeTruthy();
+
+    let handled: boolean | null | undefined;
+    act(() => {
+      handled = pressBack();
+    });
+    expect(handled).toBe(true);
+    expect(screen.queryByText('Halftime report')).toBeNull();
+    act(() => {
+      jest.advanceTimersByTime(FADE_MS + 10);
+    });
+    expect(radarOpacity()).toBe(1);
+    expect(pressBack()).toBe(false);
   });
 });
