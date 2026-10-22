@@ -229,9 +229,9 @@ Each one is stated in the PR that adds it.
 - `strands-agents` (agent): the agent SDK the architecture names, covering H2.
 - `pydantic` (contracts): the generated models.
 - `datamodel-code-generator` (dev): Python codegen.
-- `json-schema-to-typescript` (tv, dev): TS codegen. Until T2 adds
-  `apps/tv/package.json`, `make contracts` runs it with `npx` at a pinned
-  version.
+- `json-schema-to-typescript`: TS codegen. `make contracts` runs it with
+  `npx` at a pinned version, by the user's decision; it is not a dependency
+  of `apps/tv`.
 
 ## Risks
 
