@@ -89,18 +89,20 @@ def create_app() -> FastAPI:
             for raw in relay.replay():
                 queue.put_nowait(raw)
             clients.add(queue)
-        await websocket.accept()
 
         async def send() -> None:
             while True:
                 await websocket.send_text(await queue.get())
 
-        sender = asyncio.create_task(send())
         try:
-            async for _ in websocket.iter_text():
-                pass
+            await websocket.accept()
+            sender = asyncio.create_task(send())
+            try:
+                async for _ in websocket.iter_text():
+                    pass
+            finally:
+                sender.cancel()
         finally:
-            sender.cancel()
             clients.discard(queue)
 
     return app
