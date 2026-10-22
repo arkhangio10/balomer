@@ -4,8 +4,8 @@ import * as React from 'react';
 import {StyleSheet} from 'react-native';
 
 import {StatsPanel} from '../src/components/StatsPanel';
-import type {Evidence, Metrics, TeamMetrics} from '../src/contracts';
-import {FADE_MS} from '../src/theme';
+import type {Alert, Evidence, Metrics, TeamMetrics} from '../src/contracts';
+import {FADE_MS, PULSE_MS} from '../src/theme';
 
 const home: TeamMetrics = {
   possession: 54.2,
@@ -67,9 +67,33 @@ const possessionTransform = (screen: ReturnType<typeof render>) =>
   StyleSheet.flatten(screen.getByTestId('possession-home').props.style)
     .transform;
 
+const scaleOf = (screen: ReturnType<typeof render>, testID: string) =>
+  StyleSheet.flatten(screen.getByTestId(testID).props.style).transform[0].scale;
+
+const banner: Alert = {
+  type: 'alert',
+  minute: 15,
+  template_id: 'line_height_lead',
+  text: 'Home defended with a higher line than Away.',
+  evidence: [
+    {
+      metric: 'line_height',
+      team: 'away',
+      period: {kind: 'block', from_min: 0, to_min: 15},
+    },
+    {
+      metric: 'possession',
+      team: 'home',
+      period: {kind: 'block', from_min: 0, to_min: 15},
+    },
+  ],
+};
+
 describe('StatsPanel', () => {
   it("renders both teams' five values through formatValue", () => {
-    const screen = render(<StatsPanel current={current} previous={previous} />);
+    const screen = render(
+      <StatsPanel current={current} previous={previous} banner={null} />,
+    );
     for (const text of [
       'Home',
       'Away',
@@ -94,7 +118,9 @@ describe('StatsPanel', () => {
   });
 
   it('shows ▲ where a value rose, ▼ where it fell and nothing where it is unchanged', () => {
-    const screen = render(<StatsPanel current={current} previous={previous} />);
+    const screen = render(
+      <StatsPanel current={current} previous={previous} banner={null} />,
+    );
     const trends = Object.fromEntries(
       TEAMS.map(team => [
         team,
@@ -126,9 +152,15 @@ describe('StatsPanel', () => {
   });
 
   it('fades a changed value out before showing the new one', () => {
-    const screen = render(<StatsPanel current={current} previous={null} />);
+    const screen = render(
+      <StatsPanel current={current} previous={null} banner={null} />,
+    );
     screen.rerender(
-      <StatsPanel current={rolling({possession: 60})} previous={current} />,
+      <StatsPanel
+        current={rolling({possession: 60})}
+        previous={current}
+        banner={null}
+      />,
     );
     expect(screen.getByText('54%')).toBeTruthy();
     act(() => {
@@ -139,13 +171,17 @@ describe('StatsPanel', () => {
   });
 
   it('shows no trend without previous metrics', () => {
-    const screen = render(<StatsPanel current={current} previous={null} />);
+    const screen = render(
+      <StatsPanel current={current} previous={null} banner={null} />,
+    );
     expect(screen.queryByText('▲')).toBeNull();
     expect(screen.queryByText('▼')).toBeNull();
   });
 
   it('scales the possession bar to home / (home + away)', () => {
-    const screen = render(<StatsPanel current={current} previous={null} />);
+    const screen = render(
+      <StatsPanel current={current} previous={null} banner={null} />,
+    );
     expect(possessionTransform(screen)).toContainEqual({scaleX: 0.542});
   });
 
@@ -154,13 +190,53 @@ describe('StatsPanel', () => {
       <StatsPanel
         current={rolling({possession: 0}, {possession: 0})}
         previous={null}
+        banner={null}
       />,
     );
     expect(possessionTransform(screen)).toContainEqual({scaleX: 0.5});
   });
 
+  it('pulses the cited cells and the possession bar three times at 1.12', () => {
+    const screen = render(
+      <StatsPanel current={current} previous={null} banner={banner} />,
+    );
+    const pulsing = [
+      'cell-away-line_height',
+      'cell-home-possession',
+      'possession-bar',
+    ];
+    const still = [
+      'cell-home-line_height',
+      'cell-away-possession',
+      'cell-away-width',
+    ];
+    act(() => {
+      jest.advanceTimersByTime(PULSE_MS);
+    });
+    for (const id of pulsing) {
+      expect(scaleOf(screen, id)).toBeCloseTo(1.12, 2);
+    }
+    for (const id of still) {
+      expect(scaleOf(screen, id)).toBe(1);
+    }
+    act(() => {
+      jest.advanceTimersByTime(5 * PULSE_MS + 50);
+    });
+    for (const id of pulsing) {
+      expect(scaleOf(screen, id)).toBe(1);
+    }
+    act(() => {
+      jest.advanceTimersByTime(PULSE_MS);
+    });
+    for (const id of pulsing) {
+      expect(scaleOf(screen, id)).toBe(1);
+    }
+  });
+
   it('renders nothing before the first rolling metrics', () => {
-    const screen = render(<StatsPanel current={null} previous={null} />);
+    const screen = render(
+      <StatsPanel current={null} previous={null} banner={null} />,
+    );
     expect(screen.toJSON()).toBeNull();
   });
 });

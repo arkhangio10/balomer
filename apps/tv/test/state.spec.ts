@@ -1,4 +1,5 @@
 import type {
+  Alert,
   Frame,
   Message,
   Metrics,
@@ -9,6 +10,7 @@ import type {
   TeamMetrics,
 } from '../src/contracts';
 import {
+  handlesBack,
   initialState,
   periodKey,
   reduce,
@@ -63,6 +65,14 @@ const metrics = (period: Period, awayLineHeight = 24): Metrics => ({
 
 const block = metrics({kind: 'block', from_min: 0, to_min: 15}, 18);
 const half = metrics({kind: 'half', from_min: 0, to_min: 45}, 21);
+
+const alert = (minute: Alert['minute']): Alert => ({
+  type: 'alert',
+  minute,
+  template_id: 'line_height_lead',
+  text: 'Home defended with a higher line than Away.',
+  evidence: [{metric: 'line_height', team: 'home', period: block.period}],
+});
 
 const play = (...messages: Message[]): TvState =>
   messages.reduce(
@@ -127,15 +137,17 @@ describe('reduce', () => {
       frame(200, [h1, a1]),
       block,
       metrics({kind: 'rolling', from_min: 0, to_min: 5}),
+      alert(15),
     );
     const next = reduce(state, {kind: 'message', message: session(1)});
     expect(next).toEqual({...initialState, session: session(1)});
   });
 
-  it('keeps the players and the snapshots but clears rolling on a session for half 2', () => {
+  it('keeps the players, snapshots and alerts but clears rolling and the banner on a session for half 2', () => {
     const state = play(
       frame(0, [h1]),
       block,
+      alert(15),
       half,
       metrics({kind: 'rolling', from_min: 40, to_min: 45}),
       metrics({kind: 'rolling', from_min: 40.5, to_min: 45.5}),
@@ -147,8 +159,10 @@ describe('reduce', () => {
       half: 2,
       rolling: null,
       previousRolling: null,
+      banner: null,
     });
     expect(next.snapshots).toEqual({'block:0-15': block, 'half:0-45': half});
+    expect(next.alerts).toEqual([alert(15)]);
   });
 
   it('moves the old rolling metrics to previousRolling', () => {
@@ -193,5 +207,42 @@ describe('reduce', () => {
         state,
       ),
     ).toBeUndefined();
+  });
+});
+
+describe('alerts', () => {
+  it('Back with a visible banner clears it and keeps the alert in the history', () => {
+    const state = reduce(play(alert(15)), {kind: 'back'});
+    expect(state.banner).toBeNull();
+    expect(state.alerts).toEqual([alert(15)]);
+  });
+
+  it('a new alert replaces the visible banner', () => {
+    const state = play(alert(15), alert(30));
+    expect(state.banner).toEqual(alert(30));
+  });
+
+  it('bannerExpired clears the banner', () => {
+    const state = reduce(play(alert(15)), {kind: 'bannerExpired'});
+    expect(state.banner).toBeNull();
+    expect(state.alerts).toEqual([alert(15)]);
+  });
+
+  it('lists the history newest first', () => {
+    const state = play(alert(15), alert(30), alert(60));
+    expect(state.alerts.map(a => a.minute)).toEqual([60, 30, 15]);
+  });
+
+  it('keeps one alert per minute when the relay replays them on a reconnect', () => {
+    const state = play(alert(15), alert(30), alert(15), alert(30));
+    expect(state.alerts).toEqual([alert(30), alert(15)]);
+  });
+
+  it('handlesBack is true only while a banner is visible', () => {
+    expect(handlesBack(play())).toBe(false);
+    const shown = play(alert(15));
+    expect(handlesBack(shown)).toBe(true);
+    expect(handlesBack(reduce(shown, {kind: 'back'}))).toBe(false);
+    expect(handlesBack(reduce(shown, {kind: 'bannerExpired'}))).toBe(false);
   });
 });

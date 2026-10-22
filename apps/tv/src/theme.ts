@@ -69,3 +69,8 @@ export const FOCUS_SCALE_LARGE = 1.025;
 
 export const BANNER_IN_MS = 300;
 export const BANNER_OUT_MS = 220;
+export const BANNER_SHIFT = 32;
+
+export const PULSE_SCALE = 1.12;
+export const PULSE_COUNT = 3;
+export const PULSE_MS = 250;
