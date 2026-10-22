@@ -224,14 +224,14 @@ Each one is stated in the PR that adds it.
 - `ijson` (vision): streams a 2.7 GB JSON; `json.load` needs about 20 GB of RAM.
 - `numpy` (vision): reads the ball `.npz` files.
 - `websockets` (vision): the replayer's WebSocket client.
-- `fastapi` and `uvicorn` (api): the WebSocket server.
+- `fastapi`, `uvicorn` and `websockets` (api): the WebSocket server; uvicorn needs a WebSocket library.
 - `httpx` (dev): needed by FastAPI's `TestClient`.
 - `strands-agents` (agent): the agent SDK the architecture names, covering H2.
 - `pydantic` (contracts): the generated models.
 - `datamodel-code-generator` (dev): Python codegen.
-- `json-schema-to-typescript` (tv, dev): TS codegen. Until T2 adds
-  `apps/tv/package.json`, `make contracts` runs it with `npx` at a pinned
-  version.
+- `json-schema-to-typescript`: TS codegen. `make contracts` runs it with
+  `npx` at a pinned version, by the user's decision; it is not a dependency
+  of `apps/tv`.
 
 ## Risks
 

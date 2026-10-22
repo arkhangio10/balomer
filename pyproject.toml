@@ -15,6 +15,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "datamodel-code-generator==0.86.0",
+    "httpx==0.28.1",
     "mypy==2.3.1",
     "pre-commit==4.6.2",
     "pytest==9.1.1",
@@ -61,6 +62,9 @@ mypy_path = [
 [tool.pytest.ini_options]
 testpaths = ["services", "packages", "infra"]
 addopts = "--cov --cov-report=term-missing"
+filterwarnings = [
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
 
 [tool.coverage.run]
 source = ["balomer_api", "balomer_vision", "balomer_agent", "balomer_contracts", "balomer_infra"]
