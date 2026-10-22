@@ -132,10 +132,23 @@ describe('reduce', () => {
     expect(next).toEqual({...initialState, session: session(1)});
   });
 
-  it('keeps the players and the snapshots on a session for half 2', () => {
-    const state = play(frame(0, [h1]), block, half);
+  it('keeps the players and the snapshots but clears rolling on a session for half 2', () => {
+    const state = play(
+      frame(0, [h1]),
+      block,
+      half,
+      metrics({kind: 'rolling', from_min: 40, to_min: 45}),
+      metrics({kind: 'rolling', from_min: 40.5, to_min: 45.5}),
+    );
     const next = reduce(state, {kind: 'message', message: session(2)});
-    expect(next).toEqual({...state, session: session(2), half: 2});
+    expect(next).toEqual({
+      ...state,
+      session: session(2),
+      half: 2,
+      rolling: null,
+      previousRolling: null,
+    });
+    expect(next.snapshots).toEqual({'block:0-15': block, 'half:0-45': half});
   });
 
   it('moves the old rolling metrics to previousRolling', () => {

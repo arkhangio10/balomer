@@ -96,7 +96,13 @@ export function reduce(state: TvState, action: Action): TvState {
     case 'session':
       return message.half === 1
         ? {...initialState, session: message}
-        : {...state, session: message, half: message.half};
+        : {
+            ...state,
+            session: message,
+            half: message.half,
+            rolling: null,
+            previousRolling: null,
+          };
     case 'frame':
       return applyFrame(state, message);
     case 'metrics':
