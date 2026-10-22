@@ -7,7 +7,9 @@ import type {
   Phase,
   Player,
   Point,
+  Recommendation,
   Report,
+  ReportOk,
   Session,
   TeamMetrics,
 } from '../src/contracts';
@@ -159,7 +161,7 @@ describe('reduce', () => {
     expect(next).toEqual({...initialState, session: session(1)});
   });
 
-  it('keeps the players, snapshots and alerts but clears rolling and the banner on a session for half 2', () => {
+  it('keeps the players, snapshots and alerts but clears rolling, the banner and the phase on a session for half 2', () => {
     const state = play(
       frame(0, [h1]),
       block,
@@ -167,6 +169,7 @@ describe('reduce', () => {
       half,
       metrics({kind: 'rolling', from_min: 40, to_min: 45}),
       metrics({kind: 'rolling', from_min: 40.5, to_min: 45.5}),
+      phase('end', 1),
     );
     const next = reduce(state, {kind: 'message', message: session(2)});
     expect(next).toEqual({
@@ -176,6 +179,8 @@ describe('reduce', () => {
       rolling: null,
       previousRolling: null,
       banner: null,
+      seenFrame: false,
+      phase: null,
     });
     expect(next.snapshots).toEqual({'block:0-15': block, 'half:0-45': half});
     expect(next.alerts).toEqual([alert(15)]);
@@ -227,21 +232,69 @@ describe('reduce', () => {
 });
 
 describe('alerts', () => {
+  const live = frame(900000, [h1, a1]);
+
   it('Back with a visible banner clears it and keeps the alert in the history', () => {
-    const state = reduce(play(alert(15)), {kind: 'back'});
+    const state = reduce(play(live, alert(15)), {kind: 'back'});
     expect(state.banner).toBeNull();
     expect(state.alerts).toEqual([alert(15)]);
   });
 
   it('a new alert replaces the visible banner', () => {
-    const state = play(alert(15), alert(30));
+    const state = play(live, alert(15), alert(30));
     expect(state.banner).toEqual(alert(30));
   });
 
   it('bannerExpired clears the banner', () => {
-    const state = reduce(play(alert(15)), {kind: 'bannerExpired'});
+    const state = reduce(play(live, alert(15)), {kind: 'bannerExpired'});
     expect(state.banner).toBeNull();
     expect(state.alerts).toEqual([alert(15)]);
+  });
+
+  it('a late TV replayed at halftime opens the report with the history and no banner', () => {
+    const recommendation: Recommendation = {
+      problem: 'Away defended deep and gave Home time on the ball.',
+      adjustment: 'Push the back line up together.',
+      evidence: [{metric: 'line_height', team: 'away', period: half.period}],
+    };
+    const ok: ReportOk = {
+      type: 'report',
+      kind: 'halftime',
+      status: 'ok',
+      recommendations: [recommendation, recommendation, recommendation],
+    };
+    const state = play(
+      phase('end', 1),
+      block,
+      metrics({kind: 'block', from_min: 15, to_min: 30}),
+      metrics({kind: 'block', from_min: 30, to_min: 45}),
+      half,
+      alert(15),
+      alert(30),
+      metrics({kind: 'rolling', from_min: 40, to_min: 45}),
+      ok,
+      frame(2699800, [h1, a1]),
+    );
+    expect(state.screen).toBe('halftime');
+    expect(state.report).toEqual(ok);
+    expect(state.banner).toBeNull();
+    expect(state.alerts).toEqual([alert(30), alert(15)]);
+    expect(reduce(state, {kind: 'back'}).screen).toBe('live');
+  });
+
+  it('a --start burst lists its alerts without a banner, and a live alert after a frame shows one', () => {
+    const state = play(
+      phase('kickoff', 1),
+      block,
+      alert(15),
+      metrics({kind: 'rolling', from_min: 15, to_min: 20}),
+      live,
+    );
+    expect(state.banner).toBeNull();
+    expect(state.alerts).toEqual([alert(15)]);
+    const next = reduce(state, {kind: 'message', message: alert(30)});
+    expect(next.banner).toEqual(alert(30));
+    expect(next.alerts).toEqual([alert(30), alert(15)]);
   });
 
   it('lists the history newest first', () => {
@@ -256,7 +309,7 @@ describe('alerts', () => {
 
   it('handlesBack on the live screen is true only while a banner is visible', () => {
     expect(handlesBack(play())).toBe(false);
-    const shown = play(alert(15));
+    const shown = play(live, alert(15));
     expect(handlesBack(shown)).toBe(true);
     expect(handlesBack(reduce(shown, {kind: 'back'}))).toBe(false);
     expect(handlesBack(reduce(shown, {kind: 'bannerExpired'}))).toBe(false);
@@ -288,7 +341,12 @@ describe('reports', () => {
   });
 
   it('Back clears a visible banner before it leaves the report', () => {
-    const shown = play(phase('end', 1), report('halftime'), alert(15));
+    const shown = play(
+      frame(2699800, [h1]),
+      phase('end', 1),
+      report('halftime'),
+      alert(15),
+    );
     const once = reduce(shown, {kind: 'back'});
     expect(once.banner).toBeNull();
     expect(once.screen).toBe('halftime');

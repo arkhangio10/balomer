@@ -126,14 +126,17 @@ The agent is a function inside the API process: `balomer_agent.report.generate(s
 ## Alerts
 
 When the 0–15, 15–30, 45–60 and 60–75 blocks close, a rule compares that block
-with the one before it (at 15', where there is none, with the opponent's same
-block). Metrics are normalised by attack direction, so blocks from different
-halves compare. The rule picks the largest relative change, cites the metric
-for both periods (or both teams), and fills a fixed English template, for
-example
-`"Home's line dropped since the first quarter-hour — they defend deeper than Away."`
+with the one before it in the same replayed half. At 15' and 60' there is none,
+because a replay run holds one half, so the rule compares the two teams in that
+block instead. The metrics are already independent of attack direction (line
+height is measured from the team's own goal). The rule picks the largest
+relative change, cites the metric for both periods (or both teams), and fills a
+fixed English template that claims only what it cites, for example
+`"Home dropped their defensive line deeper towards their own goal than in the previous quarter-hour."`
 The text never carries a number; the banner shows the numbers by resolving the
-evidence references.
+evidence references. A block cut short by the end of a replay fires no alert,
+and the TV shows a banner only for an alert that arrives live, not for one
+replayed as history.
 
 ## TV app — screens and animations
 

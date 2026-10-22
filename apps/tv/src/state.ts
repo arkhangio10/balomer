@@ -41,6 +41,7 @@ export interface TvState {
   snapshots: Record<string, Metrics>;
   alerts: Alert[];
   banner: Alert | null;
+  seenFrame: boolean;
   phase: Phase | null;
   report: Report | null;
   screen: 'live' | 'halftime' | 'fulltime';
@@ -64,6 +65,7 @@ export const initialState: TvState = {
   snapshots: {},
   alerts: [],
   banner: null,
+  seenFrame: false,
   phase: null,
   report: null,
   screen: 'live',
@@ -117,6 +119,7 @@ function applyFrame(state: TvState, frame: Frame): TvState {
         ? [state.ball, ...state.trail].slice(0, TRAIL_LENGTH)
         : [],
     possession: frame.possession,
+    seenFrame: true,
   };
 }
 
@@ -139,6 +142,8 @@ export function reduce(state: TvState, action: Action): TvState {
             rolling: null,
             previousRolling: null,
             banner: null,
+            seenFrame: false,
+            phase: null,
           };
     case 'frame':
       return applyFrame(state, message);
@@ -151,7 +156,7 @@ export function reduce(state: TvState, action: Action): TvState {
           message,
           ...state.alerts.filter(a => a.minute !== message.minute),
         ],
-        banner: message,
+        banner: state.seenFrame ? message : state.banner,
       };
     case 'phase':
       return {

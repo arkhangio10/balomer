@@ -8,6 +8,7 @@ import {StyleSheet} from 'react-native';
 import {App} from '../src/App';
 import type {
   Alert,
+  Frame,
   Message,
   Metrics,
   ReportUnavailable,
@@ -60,6 +61,15 @@ const rolling: Metrics = {
   clock_ms: 300000,
   period: {kind: 'rolling', from_min: 0, to_min: 5},
   teams: {home: team, away: {...team, attack_direction: -1, line_x: 20}},
+};
+
+const frame: Frame = {
+  type: 'frame',
+  half: 1,
+  clock_ms: 900000,
+  players: [],
+  ball: null,
+  possession: null,
 };
 
 const alert: Alert = {
@@ -124,6 +134,7 @@ describe('App', () => {
   it('lists an alert before any rolling metrics, and Back dismisses only its banner', () => {
     const screen = render(<App />);
     send(session);
+    send(frame);
     send(alert);
     const history = screen.getByTestId('alert-history');
     expect(within(history).getByText(alert.text)).toBeTruthy();
