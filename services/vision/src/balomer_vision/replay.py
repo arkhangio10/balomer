@@ -12,6 +12,7 @@ from typing import Literal
 from balomer_contracts.models import Alert, Frame, Metrics, Period, Phase, Session
 from websockets.asyncio.client import connect
 
+from balomer_vision.alerts import minute_alert
 from balomer_vision.metrics import (
     HALF_MIN,
     MINUTE_MS,
@@ -36,6 +37,7 @@ LOG_EVERY_MS = 5_000
 DIRECTION_WINDOW_MS = 30_000
 ROLLING_EVERY_MS = 5_000
 TEAMS: tuple[Team, ...] = ("home", "away")
+ALERT_MINUTES: tuple[Literal[15, 30, 60, 75], ...] = (15, 30, 60, 75)
 
 
 @dataclass(frozen=True)
@@ -73,6 +75,12 @@ def _samples(
     return samples
 
 
+def _alerts(at_s: float, closed: Metrics, previous: Metrics | None) -> Iterator[Send]:
+    for minute in ALERT_MINUTES:
+        if minute == closed.period.to_min:
+            yield Send(at_s, minute_alert(minute, closed, previous))
+
+
 def schedule(
     session: Session, frames: Iterable[Frame], start_ms: int, speed: float
 ) -> Iterator[Send]:
@@ -101,12 +109,16 @@ def schedule(
     block, block_start = block_of(head[0].clock_ms, half), 0
     mark = head[0].clock_ms - head[0].clock_ms % ROLLING_EVERY_MS
     rolling_due = False
+    last_block: Metrics | None = None
     for frame in chain(head, rest):
         at_s = FRAME_INTERVAL_S * sent
         current = block_of(frame.clock_ms, half)
         if current != block:
             boundary = int(block.to_min * MINUTE_MS)
-            yield Send(at_s, aggregate(samples[block_start:], block, half, boundary))
+            closed = aggregate(samples[block_start:], block, half, boundary)
+            yield Send(at_s, closed)
+            yield from _alerts(at_s, closed, last_block)
+            last_block = closed
             block, block_start = current, len(samples)
         reached = frame.clock_ms - frame.clock_ms % ROLLING_EVERY_MS
         if reached > mark:
@@ -126,7 +138,9 @@ def schedule(
             index += 1
     at_s = FRAME_INTERVAL_S * sent
     whole = Period(kind="half", from_min=HALF_MIN * (half - 1), to_min=HALF_MIN * half)
-    yield Send(at_s, aggregate(samples[block_start:], block, half, clocks[-1]))
+    closed = aggregate(samples[block_start:], block, half, clocks[-1])
+    yield Send(at_s, closed)
+    yield from _alerts(at_s, closed, last_block)
     yield Send(at_s, aggregate(samples, whole, half, clocks[-1]))
     yield Send(at_s, Phase(type="phase", phase="end", half=half))
 

@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Literal
 
 import pytest
-from balomer_contracts.models import Frame, Metrics, Period, Phase, Player, Point, Session
+from balomer_contracts.models import Alert, Frame, Metrics, Period, Phase, Player, Point, Session
 from balomer_vision.replay import EdgeMessage, parse_clock, read_replay, schedule
 
 FIXTURE = Path(__file__).parent / "fixtures" / "sample_1.jsonl"
@@ -48,7 +48,7 @@ def test_schedule_respects_speed_and_start() -> None:
     sends = [
         s
         for s in schedule(session, frames, start_ms=0, speed=1)
-        if not isinstance(s.message, Metrics)
+        if not isinstance(s.message, Metrics | Alert)
     ]
     assert [s.message.type for s in sends] == ["session", "phase"] + ["frame"] * 10 + ["phase"]
     first, last = sends[1].message, sends[-1].message
@@ -76,9 +76,10 @@ def test_schedule_publishes_metrics() -> None:
     assert first_rolling.teams.home.possession == pytest.approx(60.0)
 
     closed = trace.index(("block", 900_000))
-    assert trace[closed - 1 : closed + 3] == [
+    assert trace[closed - 1 : closed + 4] == [
         ("frame", 899_800),
         ("block", 900_000),
+        ("alert", None),
         ("rolling", 900_000),
         ("frame", 900_000),
     ]
@@ -90,8 +91,13 @@ def test_schedule_publishes_metrics() -> None:
     assert block.teams.home.line_height == pytest.approx(32.5)
     assert (block.teams.home.attack_direction, block.teams.away.attack_direction) == (1, -1)
 
-    assert trace[-3:] == [("block", 959_800), ("half", 959_800), ("phase", None)]
-    last_block, half, end = messages[-3:]
+    assert trace[-4:] == [
+        ("block", 959_800),
+        ("alert", None),
+        ("half", 959_800),
+        ("phase", None),
+    ]
+    last_block, _, half, end = messages[-4:]
     assert isinstance(last_block, Metrics) and isinstance(half, Metrics)
     assert last_block.period == Period(kind="block", from_min=15, to_min=30)
     assert half.period == Period(kind="half", from_min=0, to_min=45)
@@ -106,6 +112,7 @@ def test_schedule_publishes_metrics() -> None:
         ("session", None),
         ("phase", None),
         ("block", 900_000),
+        ("alert", None),
         ("rolling", 930_000),
         ("frame", 930_000),
     ]
