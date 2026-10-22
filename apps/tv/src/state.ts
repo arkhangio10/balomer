@@ -5,12 +5,19 @@ import type {
   Message,
   Metrics,
   Period,
+  Phase,
   Player,
   Point,
+  Report,
   Session,
 } from './contracts';
 
 const TRAIL_LENGTH = 3;
+
+const REPORT_HALF: Record<Report['kind'], Phase['half']> = {
+  halftime: 1,
+  fulltime: 2,
+};
 
 export interface Dot {
   id: string;
@@ -34,6 +41,9 @@ export interface TvState {
   snapshots: Record<string, Metrics>;
   alerts: Alert[];
   banner: Alert | null;
+  phase: Phase | null;
+  report: Report | null;
+  screen: 'live' | 'halftime' | 'fulltime';
 }
 
 export type Action =
@@ -54,6 +64,9 @@ export const initialState: TvState = {
   snapshots: {},
   alerts: [],
   banner: null,
+  phase: null,
+  report: null,
+  screen: 'live',
 };
 
 export function periodKey(p: Period): string {
@@ -73,7 +86,7 @@ export function bannerDurationMs(text: string): number {
 }
 
 export function handlesBack(state: TvState): boolean {
-  return state.banner !== null;
+  return state.banner !== null || state.screen !== 'live';
 }
 
 function applyMetrics(state: TvState, metrics: Metrics): TvState {
@@ -108,8 +121,11 @@ function applyFrame(state: TvState, frame: Frame): TvState {
 }
 
 export function reduce(state: TvState, action: Action): TvState {
-  if (action.kind !== 'message') {
+  if (action.kind === 'bannerExpired') {
     return {...state, banner: null};
+  }
+  if (action.kind === 'back') {
+    return state.banner ? {...state, banner: null} : {...state, screen: 'live'};
   }
   const message = action.message;
   switch (message.type) {
@@ -137,7 +153,26 @@ export function reduce(state: TvState, action: Action): TvState {
         ],
         banner: message,
       };
-    default:
-      return state;
+    case 'phase':
+      return {
+        ...state,
+        phase: message,
+        screen:
+          message.phase === 'kickoff'
+            ? 'live'
+            : message.half === 1
+            ? 'halftime'
+            : state.screen,
+      };
+    case 'report':
+      return {
+        ...state,
+        report: message,
+        screen:
+          state.phase?.phase === 'end' &&
+          state.phase.half === REPORT_HALF[message.kind]
+            ? message.kind
+            : state.screen,
+      };
   }
 }

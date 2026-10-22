@@ -74,3 +74,9 @@ export const BANNER_SHIFT = 32;
 export const PULSE_SCALE = 1.12;
 export const PULSE_COUNT = 3;
 export const PULSE_MS = 250;
+
+export const DIM_OPACITY = 0.3;
+export const WAIT_PULSE_MS = 800;
+export const CARD_IN_MS = 300;
+export const CARD_STAGGER_MS = 120;
+export const CARD_SHIFT = 40;

@@ -4,8 +4,10 @@ import type {
   Message,
   Metrics,
   Period,
+  Phase,
   Player,
   Point,
+  Report,
   Session,
   TeamMetrics,
 } from '../src/contracts';
@@ -74,6 +76,18 @@ const alert = (minute: Alert['minute']): Alert => ({
   evidence: [{metric: 'line_height', team: 'home', period: block.period}],
 });
 
+const phase = (kind: Phase['phase'], h: Phase['half']): Phase => ({
+  type: 'phase',
+  phase: kind,
+  half: h,
+});
+
+const report = (kind: Report['kind']): Report => ({
+  type: 'report',
+  kind,
+  status: 'unavailable',
+});
+
 const play = (...messages: Message[]): TvState =>
   messages.reduce(
     (state, message) => reduce(state, {kind: 'message', message}),
@@ -138,6 +152,8 @@ describe('reduce', () => {
       block,
       metrics({kind: 'rolling', from_min: 0, to_min: 5}),
       alert(15),
+      phase('end', 1),
+      report('halftime'),
     );
     const next = reduce(state, {kind: 'message', message: session(1)});
     expect(next).toEqual({...initialState, session: session(1)});
@@ -238,11 +254,71 @@ describe('alerts', () => {
     expect(state.alerts).toEqual([alert(30), alert(15)]);
   });
 
-  it('handlesBack is true only while a banner is visible', () => {
+  it('handlesBack on the live screen is true only while a banner is visible', () => {
     expect(handlesBack(play())).toBe(false);
     const shown = play(alert(15));
     expect(handlesBack(shown)).toBe(true);
     expect(handlesBack(reduce(shown, {kind: 'back'}))).toBe(false);
     expect(handlesBack(reduce(shown, {kind: 'bannerExpired'}))).toBe(false);
+  });
+});
+
+describe('reports', () => {
+  it('phase end for half 1 opens the halftime screen before the report arrives', () => {
+    const state = play(phase('kickoff', 1), phase('end', 1));
+    expect(state.screen).toBe('halftime');
+    expect(state.phase).toEqual(phase('end', 1));
+    expect(state.report).toBeNull();
+    expect(handlesBack(state)).toBe(true);
+  });
+
+  it('stores the halftime report and stays on the halftime screen', () => {
+    const state = play(phase('end', 1), report('halftime'));
+    expect(state.report).toEqual(report('halftime'));
+    expect(state.screen).toBe('halftime');
+  });
+
+  it('Back returns a report screen to live and keeps the report', () => {
+    const state = reduce(play(phase('end', 1), report('halftime')), {
+      kind: 'back',
+    });
+    expect(state.screen).toBe('live');
+    expect(state.report).toEqual(report('halftime'));
+    expect(handlesBack(state)).toBe(false);
+  });
+
+  it('Back clears a visible banner before it leaves the report', () => {
+    const shown = play(phase('end', 1), report('halftime'), alert(15));
+    const once = reduce(shown, {kind: 'back'});
+    expect(once.banner).toBeNull();
+    expect(once.screen).toBe('halftime');
+    expect(reduce(once, {kind: 'back'}).screen).toBe('live');
+  });
+
+  it('kickoff returns to live', () => {
+    const state = play(
+      phase('end', 1),
+      report('halftime'),
+      phase('kickoff', 2),
+    );
+    expect(state.screen).toBe('live');
+  });
+
+  it('a report outside its phase end does not change the screen', () => {
+    const late = [session(2), phase('kickoff', 2), report('halftime')].reduce(
+      (state: TvState, message: Message) =>
+        reduce(state, {kind: 'message', message}),
+      initialState,
+    );
+    expect(late.screen).toBe('live');
+    expect(late.report).toEqual(report('halftime'));
+  });
+
+  it('phase end for half 2 keeps the screen until the full-time report arrives', () => {
+    const ended = play(phase('end', 2));
+    expect(ended.screen).toBe('live');
+    expect(
+      reduce(ended, {kind: 'message', message: report('fulltime')}).screen,
+    ).toBe('fulltime');
   });
 });
