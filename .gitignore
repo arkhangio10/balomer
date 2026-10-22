@@ -12,7 +12,6 @@ secrets/
 
 # Datasets and model weights
 data/
-!apps/tv/src/data/
 *.pt
 *.onnx
 *.engine

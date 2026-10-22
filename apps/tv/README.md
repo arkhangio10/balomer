@@ -1,7 +1,7 @@
 # apps/tv — Fire TV app (Vega OS)
 
-Generated with Vega CLI 1.4.5 (SDK 0.24.12112) and committed unchanged, apart
-from `package-lock.json` and the Jest snapshot that the first `npm test` wrote:
+Generated with Vega CLI 1.4.5 (SDK 0.24.12112). The configuration files are the
+generator's; the template's screen has been replaced by the live radar:
 
 ```sh
 vega project generate --template helloWorld --name balomertv \
