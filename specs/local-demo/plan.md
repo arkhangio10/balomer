@@ -131,7 +131,7 @@ def test_new_first_half_session_clears_cache() -> None:
   - **Disconnect:** remove the queue.
   - **Validation:** `Message.model_validate_json(raw)`; on `ValidationError`, do D1.
 - [ ] **Step 4: Run the tests and `make check`; all pass.**
-- [ ] **Step 5: Check the server in WSL.** Run `uv run uvicorn balomer_api.app:app --host 127.0.0.1 --port 8080`. A WebSocket upgrade with `curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: SGVsbG8sIHdvcmxkIQ==" http://127.0.0.1:8080/ws/tv` answers `HTTP/1.1 101 Switching Protocols`. Do the same for `/ws/edge`. <!-- gitleaks:allow: the key is the RFC 6455 sample nonce, not a secret -->
+- [ ] **Step 5: Check the server in WSL.** Run `uv run uvicorn balomer_api.app:app --host 127.0.0.1 --port 8080`. A WebSocket upgrade with `curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" http://127.0.0.1:8080/ws/tv` answers `HTTP/1.1 101 Switching Protocols`. Do the same for `/ws/edge`. <!-- gitleaks:allow: the key is the RFC 6455 sample nonce, not a secret -->
 - [ ] **Step 6: Open the PR** (see "How every task runs"), with `fastapi`, `uvicorn`, `websockets` and `httpx`, each pinned and justified.
 
 ### Task 2: T4 — Replay a frame file as live (AC-4)
