@@ -1,5 +1,20 @@
-import type {Frame, Player, Point, Session} from '../src/contracts';
-import {initialState, reduce, TvState} from '../src/state';
+import type {
+  Frame,
+  Message,
+  Metrics,
+  Period,
+  Player,
+  Point,
+  Session,
+  TeamMetrics,
+} from '../src/contracts';
+import {
+  initialState,
+  periodKey,
+  reduce,
+  resolveEvidence,
+  TvState,
+} from '../src/state';
 
 const session = (half: 1 | 2): Session => ({
   type: 'session',
@@ -27,8 +42,30 @@ const frame = (
   possession: 'home',
 });
 
-const play = (...frames: Frame[]): TvState =>
-  frames.reduce(
+const team = (lineHeight: number): TeamMetrics => ({
+  possession: 50,
+  line_height: lineHeight,
+  width: 40,
+  depth: 30,
+  compactness: 1200,
+  attack_direction: 1,
+  line_x: -20,
+  block: {x_min: -25, x_max: 5, y_min: -20, y_max: 20},
+});
+
+const metrics = (period: Period, awayLineHeight = 24): Metrics => ({
+  type: 'metrics',
+  half: 1,
+  clock_ms: period.to_min * 60000,
+  period,
+  teams: {home: team(30), away: team(awayLineHeight)},
+});
+
+const block = metrics({kind: 'block', from_min: 0, to_min: 15}, 18);
+const half = metrics({kind: 'half', from_min: 0, to_min: 45}, 21);
+
+const play = (...messages: Message[]): TvState =>
+  messages.reduce(
     (state, message) => reduce(state, {kind: 'message', message}),
     reduce(initialState, {kind: 'message', message: session(1)}),
   );
@@ -85,14 +122,76 @@ describe('reduce', () => {
   });
 
   it('resets the state on a session for half 1', () => {
-    const state = play(frame(0, [h1], {x: 0, y: 0}), frame(200, [h1, a1]));
+    const state = play(
+      frame(0, [h1], {x: 0, y: 0}),
+      frame(200, [h1, a1]),
+      block,
+      metrics({kind: 'rolling', from_min: 0, to_min: 5}),
+    );
     const next = reduce(state, {kind: 'message', message: session(1)});
     expect(next).toEqual({...initialState, session: session(1)});
   });
 
-  it('keeps the players on a session for half 2', () => {
-    const state = play(frame(0, [h1]));
+  it('keeps the players and the snapshots but clears rolling on a session for half 2', () => {
+    const state = play(
+      frame(0, [h1]),
+      block,
+      half,
+      metrics({kind: 'rolling', from_min: 40, to_min: 45}),
+      metrics({kind: 'rolling', from_min: 40.5, to_min: 45.5}),
+    );
     const next = reduce(state, {kind: 'message', message: session(2)});
-    expect(next).toEqual({...state, session: session(2), half: 2});
+    expect(next).toEqual({
+      ...state,
+      session: session(2),
+      half: 2,
+      rolling: null,
+      previousRolling: null,
+    });
+    expect(next.snapshots).toEqual({'block:0-15': block, 'half:0-45': half});
+  });
+
+  it('moves the old rolling metrics to previousRolling', () => {
+    const first = metrics({kind: 'rolling', from_min: 0, to_min: 5});
+    const second = metrics({kind: 'rolling', from_min: 0.5, to_min: 5.5}, 22);
+    const state = play(first, second);
+    expect(state.rolling).toEqual(second);
+    expect(state.previousRolling).toEqual(first);
+    expect(state.snapshots).toEqual({});
+  });
+
+  it('keeps block and half snapshots under their period key', () => {
+    const state = play(block, half);
+    expect(periodKey({kind: 'block', from_min: 15, to_min: 30})).toBe(
+      'block:15-30',
+    );
+    expect(state.snapshots).toEqual({'block:0-15': block, 'half:0-45': half});
+    expect(state.rolling).toBeNull();
+  });
+
+  it('resolves evidence against the snapshots', () => {
+    const state = play(block, half);
+    expect(
+      resolveEvidence(
+        {metric: 'line_height', team: 'away', period: block.period},
+        state,
+      ),
+    ).toBe(18);
+    expect(
+      resolveEvidence(
+        {metric: 'line_height', team: 'away', period: half.period},
+        state,
+      ),
+    ).toBe(21);
+    expect(
+      resolveEvidence(
+        {
+          metric: 'line_height',
+          team: 'away',
+          period: {kind: 'block', from_min: 15, to_min: 30},
+        },
+        state,
+      ),
+    ).toBeUndefined();
   });
 });

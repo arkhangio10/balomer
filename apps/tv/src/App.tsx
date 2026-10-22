@@ -2,8 +2,11 @@ import React, {useEffect, useReducer} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Ball} from './components/Ball';
 import {ClockBar} from './components/ClockBar';
+import {DefensiveLine} from './components/DefensiveLine';
 import {Pitch} from './components/Pitch';
 import {PlayerDot} from './components/PlayerDot';
+import {StatsPanel} from './components/StatsPanel';
+import {TeamBlock} from './components/TeamBlock';
 import {API_URL, connect} from './feed';
 import {fitPitch, toScreen} from './pitch';
 import {initialState, reduce} from './state';
@@ -17,7 +20,7 @@ export const App = () => {
     [],
   );
 
-  const {session} = state;
+  const {session, rolling} = state;
   if (!session) {
     return <View style={styles.screen} />;
   }
@@ -34,6 +37,30 @@ export const App = () => {
         credit={session.credit}
       />
       <Pitch box={box} />
+      {rolling &&
+        (['home', 'away'] as const).map(team => {
+          const {block, line_x} = rolling.teams[team];
+          return (
+            <React.Fragment key={team}>
+              <TeamBlock
+                team={team}
+                topLeft={toScreen({x: block.x_min, y: block.y_min}, L, W, box)}
+                bottomRight={toScreen(
+                  {x: block.x_max, y: block.y_max},
+                  L,
+                  W,
+                  box,
+                )}
+                box={box}
+              />
+              <DefensiveLine
+                team={team}
+                left={toScreen({x: line_x, y: 0}, L, W, box).left}
+                box={box}
+              />
+            </React.Fragment>
+          );
+        })}
       {Object.values(state.dots).map(dot => (
         <PlayerDot
           key={dot.id}
@@ -49,6 +76,7 @@ export const App = () => {
           possession={state.possession}
         />
       )}
+      <StatsPanel current={rolling} previous={state.previousRolling} />
     </View>
   );
 };
