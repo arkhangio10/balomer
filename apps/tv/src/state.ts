@@ -1,4 +1,13 @@
-import type {Frame, Message, Player, Point, Session} from './contracts';
+import type {
+  Evidence,
+  Frame,
+  Message,
+  Metrics,
+  Period,
+  Player,
+  Point,
+  Session,
+} from './contracts';
 
 const TRAIL_LENGTH = 3;
 
@@ -19,6 +28,9 @@ export interface TvState {
   ball: Point | null;
   trail: Point[];
   possession: Player['team'] | null;
+  rolling: Metrics | null;
+  previousRolling: Metrics | null;
+  snapshots: Record<string, Metrics>;
 }
 
 export type Action = {kind: 'message'; message: Message};
@@ -31,7 +43,30 @@ export const initialState: TvState = {
   ball: null,
   trail: [],
   possession: null,
+  rolling: null,
+  previousRolling: null,
+  snapshots: {},
 };
+
+export function periodKey(p: Period): string {
+  return `${p.kind}:${p.from_min}-${p.to_min}`;
+}
+
+export function resolveEvidence(
+  e: Evidence,
+  state: TvState,
+): number | undefined {
+  return state.snapshots[periodKey(e.period)]?.teams[e.team][e.metric];
+}
+
+function applyMetrics(state: TvState, metrics: Metrics): TvState {
+  return metrics.period.kind === 'rolling'
+    ? {...state, rolling: metrics, previousRolling: state.rolling}
+    : {
+        ...state,
+        snapshots: {...state.snapshots, [periodKey(metrics.period)]: metrics},
+      };
+}
 
 function applyFrame(state: TvState, frame: Frame): TvState {
   const dots: Record<string, Dot> = {};
@@ -64,6 +99,8 @@ export function reduce(state: TvState, action: Action): TvState {
         : {...state, session: message, half: message.half};
     case 'frame':
       return applyFrame(state, message);
+    case 'metrics':
+      return applyMetrics(state, message);
     default:
       return state;
   }

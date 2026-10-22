@@ -1,3 +1,4 @@
+import type {Evidence, Player} from './contracts';
 import type {Box} from './pitch';
 
 export const SCREEN = {width: 1920, height: 1080};
@@ -12,7 +13,44 @@ export const RADAR_AREA: Box = {
   height: SCREEN.height - SAFE.y - (SAFE.y + CLOCK_BAR_HEIGHT),
 };
 
+const PANEL_GAP = 32;
+const STATS_LEFT = RADAR_AREA.left + RADAR_AREA.width + PANEL_GAP;
+
+export const STATS_AREA: Box = {
+  left: STATS_LEFT,
+  top: RADAR_AREA.top,
+  width: SCREEN.width - SAFE.x - STATS_LEFT,
+  height: RADAR_AREA.height,
+};
+
 export const FRAME_MS = 200;
+export const TWEEN_MS = 600;
+export const FADE_MS = 150;
+
+export const TEAM_LABEL: Record<Player['team'], string> = {
+  home: 'Home',
+  away: 'Away',
+};
+
+export const METRIC_LABEL: Record<Evidence['metric'], string> = {
+  possession: 'Possession',
+  line_height: 'Line height',
+  width: 'Width',
+  depth: 'Depth',
+  compactness: 'Compactness',
+};
+
+const UNIT: Record<Evidence['metric'], string> = {
+  possession: '%',
+  line_height: ' m',
+  width: ' m',
+  depth: ' m',
+  compactness: ' m²',
+};
+
+export function formatValue(metric: Evidence['metric'], value: number): string {
+  return `${Math.round(value)}${UNIT[metric]}`;
+}
 
 export const colors = {
   background: '#0B1F17',
