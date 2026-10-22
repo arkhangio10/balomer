@@ -1,6 +1,6 @@
 from typing import Literal, get_args
 
-from balomer_contracts.models import Alert, Evidence, Metrics, TeamMetrics
+from balomer_contracts.models import Alert, Evidence, Metrics
 
 from balomer_vision.metrics import Team
 
@@ -57,8 +57,14 @@ TEMPLATES: dict[str, str] = {
 
 
 def _value(metrics: Metrics, team: Team, metric: Metric) -> float:
-    side: TeamMetrics = getattr(metrics.teams, team)
-    return float(getattr(side, metric))
+    side = metrics.teams.home if team == "home" else metrics.teams.away
+    return {
+        "possession": side.possession,
+        "line_height": side.line_height,
+        "width": side.width,
+        "depth": side.depth,
+        "compactness": side.compactness,
+    }[metric]
 
 
 def minute_alert(

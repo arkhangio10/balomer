@@ -91,13 +91,12 @@ def test_schedule_publishes_metrics() -> None:
     assert block.teams.home.line_height == pytest.approx(32.5)
     assert (block.teams.home.attack_direction, block.teams.away.attack_direction) == (1, -1)
 
-    assert trace[-4:] == [
+    assert trace[-3:] == [
         ("block", 959_800),
-        ("alert", None),
         ("half", 959_800),
         ("phase", None),
     ]
-    last_block, _, half, end = messages[-4:]
+    last_block, half, end = messages[-3:]
     assert isinstance(last_block, Metrics) and isinstance(half, Metrics)
     assert last_block.period == Period(kind="block", from_min=15, to_min=30)
     assert half.period == Period(kind="half", from_min=0, to_min=45)
@@ -127,3 +126,8 @@ def test_read_replay_reads_the_committed_fixture() -> None:
     assert read_session.credit == "Synthetic test sample"
     assert len(all_frames) == 30
     assert all(len(f.players) == 22 and f.possession is None for f in all_frames)
+
+
+def test_no_alert_when_the_replay_ends_before_a_minute_mark() -> None:
+    sends = list(schedule(session, frames, start_ms=0, speed=1))
+    assert not any(isinstance(s.message, Alert) for s in sends)

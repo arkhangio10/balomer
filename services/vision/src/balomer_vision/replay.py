@@ -138,9 +138,7 @@ def schedule(
             index += 1
     at_s = FRAME_INTERVAL_S * sent
     whole = Period(kind="half", from_min=HALF_MIN * (half - 1), to_min=HALF_MIN * half)
-    closed = aggregate(samples[block_start:], block, half, clocks[-1])
-    yield Send(at_s, closed)
-    yield from _alerts(at_s, closed, last_block)
+    yield Send(at_s, aggregate(samples[block_start:], block, half, clocks[-1]))
     yield Send(at_s, aggregate(samples, whole, half, clocks[-1]))
     yield Send(at_s, Phase(type="phase", phase="end", half=half))
 
