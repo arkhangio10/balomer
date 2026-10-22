@@ -71,8 +71,9 @@ Pitch size travels in a `session` message, so a 7-a-side pitch needs no change.
 
 ## Metrics (pure functions, `services/vision`)
 
-- **Attack direction** per team per half: the sign of the team goalkeeper's mean
-  `x` over the first 30 s of the half. Teams swap ends at halftime.
+- **Attack direction** per team per half: the opposite of the sign of the team
+  goalkeeper's mean `x` over the first 30 s of the half, since the goalkeeper
+  stands in front of the goal the team defends. Teams swap ends at halftime.
 - **Possession per frame**: the team of the outfield player nearest the ball if
   within 2 m; otherwise it keeps the previous value. **Possession %** is over
   the rolling window and cumulative.
