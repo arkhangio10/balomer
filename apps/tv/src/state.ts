@@ -1,4 +1,5 @@
 import type {
+  Alert,
   Evidence,
   Frame,
   Message,
@@ -31,9 +32,14 @@ export interface TvState {
   rolling: Metrics | null;
   previousRolling: Metrics | null;
   snapshots: Record<string, Metrics>;
+  alerts: Alert[];
+  banner: Alert | null;
 }
 
-export type Action = {kind: 'message'; message: Message};
+export type Action =
+  | {kind: 'message'; message: Message}
+  | {kind: 'back'}
+  | {kind: 'bannerExpired'};
 
 export const initialState: TvState = {
   session: null,
@@ -46,6 +52,8 @@ export const initialState: TvState = {
   rolling: null,
   previousRolling: null,
   snapshots: {},
+  alerts: [],
+  banner: null,
 };
 
 export function periodKey(p: Period): string {
@@ -54,9 +62,18 @@ export function periodKey(p: Period): string {
 
 export function resolveEvidence(
   e: Evidence,
-  state: TvState,
+  state: Pick<TvState, 'snapshots'>,
 ): number | undefined {
   return state.snapshots[periodKey(e.period)]?.teams[e.team][e.metric];
+}
+
+export function bannerDurationMs(text: string): number {
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return Math.max(5000, 330 * words + 2000);
+}
+
+export function handlesBack(state: TvState): boolean {
+  return state.banner !== null;
 }
 
 function applyMetrics(state: TvState, metrics: Metrics): TvState {
@@ -91,6 +108,9 @@ function applyFrame(state: TvState, frame: Frame): TvState {
 }
 
 export function reduce(state: TvState, action: Action): TvState {
+  if (action.kind !== 'message') {
+    return {...state, banner: null};
+  }
   const message = action.message;
   switch (message.type) {
     case 'session':
@@ -102,11 +122,21 @@ export function reduce(state: TvState, action: Action): TvState {
             half: message.half,
             rolling: null,
             previousRolling: null,
+            banner: null,
           };
     case 'frame':
       return applyFrame(state, message);
     case 'metrics':
       return applyMetrics(state, message);
+    case 'alert':
+      return {
+        ...state,
+        alerts: [
+          message,
+          ...state.alerts.filter(a => a.minute !== message.minute),
+        ],
+        banner: message,
+      };
     default:
       return state;
   }

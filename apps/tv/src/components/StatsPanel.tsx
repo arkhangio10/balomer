@@ -1,15 +1,15 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Animated, StyleSheet, Text, View} from 'react-native';
-import type {Evidence, Metrics} from '../contracts';
+import type {Alert, Evidence, Metrics, Player} from '../contracts';
 import {
   colors,
   FADE_MS,
   formatValue,
   METRIC_LABEL,
   MIN_TEXT,
-  STATS_AREA,
   TEAM_LABEL,
 } from '../theme';
+import {usePulse} from './AlertBanner';
 import {PossessionBar} from './PossessionBar';
 
 const TEAMS = ['home', 'away'] as const;
@@ -18,6 +18,7 @@ const METRICS = Object.keys(METRIC_LABEL) as Evidence['metric'][];
 interface Props {
   current: Metrics | null;
   previous: Metrics | null;
+  banner: Alert | null;
 }
 
 function trend(now: number, before: number): string | null {
@@ -51,13 +52,32 @@ const FadeText = ({text}: {text: string}) => {
   );
 };
 
-export const StatsPanel = ({current, previous}: Props) => {
+interface CellProps {
+  banner: Alert | null;
+  metric: Evidence['metric'];
+  team: Player['team'];
+  children: React.ReactNode;
+}
+
+const Cell = ({banner, metric, team, children}: CellProps) => {
+  const scale = usePulse(banner, [metric], team);
+
+  return (
+    <Animated.View
+      testID={`cell-${team}-${metric}`}
+      style={[styles.cell, {transform: [{scale}]}]}>
+      {children}
+    </Animated.View>
+  );
+};
+
+export const StatsPanel = ({current, previous, banner}: Props) => {
   if (!current) {
     return null;
   }
 
   return (
-    <View style={styles.panel}>
+    <View>
       <View style={styles.row}>
         <View style={styles.label} />
         {TEAMS.map(team => (
@@ -86,7 +106,7 @@ export const StatsPanel = ({current, previous}: Props) => {
               const arrow =
                 previous && trend(value, previous.teams[team][metric]);
               return (
-                <View key={team} style={styles.cell}>
+                <Cell key={team} banner={banner} metric={metric} team={team}>
                   <FadeText text={formatValue(metric, value)} />
                   <View style={styles.trend}>
                     {arrow && (
@@ -97,7 +117,7 @@ export const StatsPanel = ({current, previous}: Props) => {
                       </Text>
                     )}
                   </View>
-                </View>
+                </Cell>
               );
             })}
           </View>
@@ -105,6 +125,7 @@ export const StatsPanel = ({current, previous}: Props) => {
             <PossessionBar
               home={current.teams.home.possession}
               away={current.teams.away.possession}
+              banner={banner}
             />
           )}
         </React.Fragment>
@@ -114,12 +135,6 @@ export const StatsPanel = ({current, previous}: Props) => {
 };
 
 const styles = StyleSheet.create({
-  panel: {
-    position: 'absolute',
-    left: STATS_AREA.left,
-    top: STATS_AREA.top,
-    width: STATS_AREA.width,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

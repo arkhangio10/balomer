@@ -201,7 +201,9 @@ and [WCAG 2.2](https://www.w3.org/TR/WCAG22/).
   - Both carry no analysis logic and are unit-tested with Jest.
 - **Navigation**: screen state lives in `App` (`live`, `halftime`,
   `fulltime`). Focus uses `TVFocusGuideView` and `hasTVPreferredFocus`, and
-  Back uses `useTVEventHandler`, all from `@amazon-devices/react-native-kepler`.
+  Back uses `BackHandler` (`hardwareBackPress`), all from
+  `@amazon-devices/react-native-kepler`. The handler returns `true` only when
+  it handled Back, so otherwise the system closes the app.
   Back dismisses a visible alert banner first; otherwise it returns from a
   report to `live`.
 - **Credit line**: shown on the clock bar, `Data: SoccerTrack v2 (CC BY 4.0)`.

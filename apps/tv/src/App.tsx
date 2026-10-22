@@ -1,5 +1,8 @@
-import React, {useEffect, useReducer} from 'react';
+import {BackHandler} from '@amazon-devices/react-native-kepler';
+import React, {useCallback, useEffect, useReducer, useRef} from 'react';
 import {StyleSheet, View} from 'react-native';
+import {AlertBanner} from './components/AlertBanner';
+import {AlertHistory} from './components/AlertHistory';
 import {Ball} from './components/Ball';
 import {ClockBar} from './components/ClockBar';
 import {DefensiveLine} from './components/DefensiveLine';
@@ -9,18 +12,40 @@ import {StatsPanel} from './components/StatsPanel';
 import {TeamBlock} from './components/TeamBlock';
 import {API_URL, connect} from './feed';
 import {fitPitch, toScreen} from './pitch';
-import {initialState, reduce} from './state';
-import {colors, RADAR_AREA} from './theme';
+import {handlesBack, initialState, reduce} from './state';
+import {colors, RADAR_AREA, STATS_AREA} from './theme';
 
 export const App = () => {
   const [state, dispatch] = useReducer(reduce, initialState);
+
+  const latest = useRef(state);
 
   useEffect(
     () => connect(API_URL, message => dispatch({kind: 'message', message})),
     [],
   );
 
-  const {session, rolling} = state;
+  useEffect(() => {
+    latest.current = state;
+  }, [state]);
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (!handlesBack(latest.current)) {
+          return false;
+        }
+        dispatch({kind: 'back'});
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, []);
+
+  const expire = useCallback(() => dispatch({kind: 'bannerExpired'}), []);
+
+  const {session, rolling, banner} = state;
   if (!session) {
     return <View style={styles.screen} />;
   }
@@ -52,11 +77,13 @@ export const App = () => {
                   box,
                 )}
                 box={box}
+                banner={banner}
               />
               <DefensiveLine
                 team={team}
                 left={toScreen({x: line_x, y: 0}, L, W, box).left}
                 box={box}
+                banner={banner}
               />
             </React.Fragment>
           );
@@ -76,7 +103,19 @@ export const App = () => {
           possession={state.possession}
         />
       )}
-      <StatsPanel current={rolling} previous={state.previousRolling} />
+      <View style={styles.side}>
+        <StatsPanel
+          current={rolling}
+          previous={state.previousRolling}
+          banner={banner}
+        />
+        <AlertHistory alerts={state.alerts} />
+      </View>
+      <AlertBanner
+        alert={banner}
+        snapshots={state.snapshots}
+        onExpire={expire}
+      />
     </View>
   );
 };
@@ -85,5 +124,12 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  side: {
+    position: 'absolute',
+    left: STATS_AREA.left,
+    top: STATS_AREA.top,
+    width: STATS_AREA.width,
+    height: STATS_AREA.height,
   },
 });
