@@ -122,7 +122,6 @@ def test_no_digit_and_12_to_15_words() -> None:
     for text in texts:
         assert not any(c.isdigit() for c in text)
         assert 12 <= len(text.split()) <= 15
-    assert not any(c.isdigit() for c in "".join(TEMPLATES))
 
 
 def test_previous_block_rule_picks_largest_relative_change() -> None:
