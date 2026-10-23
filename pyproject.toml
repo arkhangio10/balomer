@@ -59,6 +59,10 @@ mypy_path = [
     "infra/src",
 ]
 
+[[tool.mypy.overrides]]
+module = ["ijson"]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["services", "packages", "infra"]
 addopts = "--cov --cov-report=term-missing"
