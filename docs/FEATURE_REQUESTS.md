@@ -8,12 +8,6 @@ worse design) · **Nice-to-have** (would have been pleasant).
 
 ---
 
-## [EXAMPLE — delete once there is a real entry] Headless Vega simulator for CI
-
-- **Description:** A way to run the Vega simulator without a display, so a smoke test of the Fire TV app can run in GitHub Actions.
-- **Why it matters:** Right now the TV app is the only part of Balomer with no automated check. Every regression in it is found by hand, minutes before a demo.
-- **Priority:** Important
-
 ## Supported Vega SDK on Windows through WSL2
 
 - **Description:** Support and document the Vega SDK and the Virtual Device on WSL2: the system packages, KVM, and keeping the emulator alive after the launching session ends.
