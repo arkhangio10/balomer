@@ -23,9 +23,10 @@ Amazon "Build, Ship, Shape" Developer Hackathon.
   compactness over the last 5 minutes, with each team's defensive line and
   block drawn on the pitch
 - **Minute alerts** — at 15', 30', 60' and 75', each citing the metrics behind it
-- **Halftime and full-time reports** — three recommendations, each citing a
-  measured metric. The TV screens are built; the agent that writes the report
-  is not part of this release yet (see [Known limitations](#known-limitations))
+- **Halftime report** — three recommendations, each a problem and one
+  adjustment citing a measured metric. Claude Sonnet 4.6 on Amazon Bedrock
+  writes them through Strands, and a validator rejects any evidence that is not
+  in the input and any digit in the text
 
 ## Architecture
 
@@ -57,7 +58,11 @@ You need Linux or WSL2 Ubuntu with:
   ([Vega developer guides](https://developer.amazon.com/docs/vega/0.24/dev-guides-overview.html)).
   Tested with Vega CLI 1.4.5 and SDK 0.24.12112;
 - the [Hugging Face CLI](https://huggingface.co/docs/huggingface_hub/guides/cli)
-  (`hf`), logged in to an account that has accepted the SoccerTrack v2 terms.
+  (`hf`), logged in to an account that has accepted the SoccerTrack v2 terms;
+- for the halftime report, an AWS account with a valid payment method (Bedrock
+  sells Claude through an AWS Marketplace subscription) and access to Claude
+  Sonnet 4.6 in `us-east-1`, and the AWS CLI v2 signed in with
+  `aws login --profile balomer`.
 
 Run each step from the repository root, each server in its own terminal.
 
@@ -84,9 +89,13 @@ Run each step from the repository root, each server in its own terminal.
    uv run python -m balomer_vision.soccertrack 117092
    ```
 
-4. Start the API (terminal 1):
+4. Start the API (terminal 1). When the first half ends, it asks Bedrock for
+   the halftime report with the profile and model below.
 
    ```sh
+   export AWS_PROFILE=balomer
+   export AWS_DEFAULT_REGION=us-east-1
+   export BEDROCK_MODEL_ID=us.anthropic.claude-sonnet-4-6
    uv run uvicorn balomer_api.app:app --host 127.0.0.1 --port 8080
    ```
 
@@ -117,10 +126,10 @@ Run each step from the repository root, each server in its own terminal.
 
 ## Known limitations
 
-- **No generated report yet.** The agent on Bedrock is not part of this
-  release. When the first half ends, the TV shows "Analysing the first half…"
-  and no report follows; Back returns to the radar. The demo never shows a test
-  fixture as a generated report.
+- **Halftime report only.** Nothing generates the full-time report yet.
+  Without Bedrock credentials, the TV stays on "Analysing the first half…"
+  after the first half and the API logs the error; Back returns to the radar.
+  The demo never shows a test fixture as a generated report.
 - **The ball moves in straight lines.** SoccerTrack v2 reconstructs the ball
   track between events instead of measuring it on every frame. Possession, the
   team of the nearest outfield player within 2 m, inherits that.
@@ -165,7 +174,7 @@ tests first for anything deterministic, Conventional Commits, squash merge onto
 | `apps/capture/` | Host-side camera capture. Not used in local mode. |
 | `services/vision/` | Edge worker: SoccerTrack v2 ingest, replayer, metrics and alerts. |
 | `services/api/` | FastAPI WebSocket relay between the edge and the TV. |
-| `services/agent/` | Strands agent for the reports. Not wired yet. |
+| `services/agent/` | Strands agent that writes the halftime report on Bedrock. |
 | `packages/contracts/` | JSON Schema contracts. Source of truth for boundary types. |
 | `infra/` | AWS CDK app in Python. Not used in local mode. |
 | `specs/` | One directory per feature: requirements, design, tasks. |

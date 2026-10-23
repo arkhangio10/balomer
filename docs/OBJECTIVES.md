@@ -9,7 +9,7 @@ Top clubs pay six figures a year for match analysis. Amateur coaches have no ana
 On Oct 20 the plan pivoted: everything runs on one laptop, and nothing is deployed to AWS except the Bedrock model call. A recorded SoccerTrack v2 match replays as live through the edge, the API relay and the Vega app. The spec is [specs/local-demo](../specs/local-demo/).
 
 - Not advanced in this release: P1 and V1-V4 (no computer vision; the tracks come from annotations), P9 (pro mode), E5, S2, S3 and S5 (no AWS deployment), and S7 (Guardrails need a CDK stack).
-- Waiting on AWS credentials: H2, P5 and P6, through task T11 (Strands with Bedrock, without AgentCore).
+- Partly advanced: H2 (Strands with Bedrock, without AgentCore) and P5, through task T11. P6, the full-time report, is not generated.
 - Does not apply: S6, since nobody is filmed.
 
 ## Hackathon

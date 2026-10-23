@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Balomer tactical agent (Strands)"
 requires-python = ">=3.12,<3.13"
 license = "Apache-2.0"
-dependencies = []
+dependencies = [
+    "botocore[crt]==1.43.118",
+    "strands-agents==1.62.0",
+]
 
 [build-system]
 requires = ["hatchling"]

@@ -1,6 +1,8 @@
 import asyncio
 import logging
+from collections.abc import Callable
 
+from balomer_agent.report import generate
 from balomer_contracts.models import (
     Alert,
     Frame,
@@ -15,6 +17,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
+
+Report = Callable[[list[Metrics]], ReportOk | ReportUnavailable]
 
 
 class Relay:
@@ -50,6 +54,10 @@ class Relay:
         elif isinstance(body, ReportOk | ReportUnavailable):
             self._report = raw
 
+    def snapshots(self, half: int) -> list[Metrics]:
+        parsed = (Metrics.model_validate_json(raw) for raw in self._snapshots)
+        return [m for m in parsed if m.half == half]
+
     def replay(self) -> list[str]:
         singles = [self._session, self._phase]
         tail = [self._rolling, self._report, self._frame]
@@ -58,11 +66,27 @@ class Relay:
         ]
 
 
-def create_app() -> FastAPI:
+def create_app(report: Report = generate) -> FastAPI:
     app = FastAPI()
     relay = Relay()
     lock = asyncio.Lock()
     clients: set[asyncio.Queue[str]] = set()
+    tasks: set[asyncio.Task[None]] = set()
+
+    def publish(message: Message, raw: str) -> None:
+        relay.record(message, raw)
+        for queue in clients:
+            queue.put_nowait(raw)
+
+    async def halftime(snapshots: list[Metrics]) -> None:
+        try:
+            result = await asyncio.to_thread(report, snapshots)
+        except Exception:
+            logger.exception("Halftime report failed")
+            return
+        raw = result.model_dump_json()
+        async with lock:
+            publish(Message.model_validate_json(raw), raw)
 
     @app.websocket("/ws/edge")
     async def edge(websocket: WebSocket) -> None:
@@ -76,9 +100,12 @@ def create_app() -> FastAPI:
                     logger.warning("Dropped invalid edge message: %s", error)
                     continue
                 async with lock:
-                    relay.record(message, raw)
-                    for queue in clients:
-                        queue.put_nowait(raw)
+                    publish(message, raw)
+                    body = message.root
+                    if isinstance(body, Phase) and body.phase == "end" and body.half == 1:
+                        task = asyncio.create_task(halftime(relay.snapshots(1)))
+                        tasks.add(task)
+                        task.add_done_callback(tasks.discard)
         except WebSocketDisconnect:
             return
 

@@ -107,20 +107,25 @@ Pitch size travels in a `session` message, so a 7-a-side pitch needs no change.
 The agent is a function inside the API process: `balomer_agent.report.generate(snapshots) -> Report`.
 
 - The API calls it from a background task when it receives `phase end` for
-  half 1, or for half 2 if T11 covers AC-13.
+  half 1. T11 does not cover AC-13: no report follows half 2.
 - Its input is the list of `block` and `half` snapshots for the half. Its output
   is a `report`, both as generated models.
 - The validator checks:
   - every evidence `(metric, team, period)` is in the input;
   - no text field contains a digit;
+  - no problem or adjustment is longer than 110 characters, about two lines on
+    a report card, since the card does not clip;
   - there are exactly three recommendations.
 
   On failure the agent is asked once more with the errors; on a second failure,
   `status: unavailable`.
-- **Model**: Strands `BedrockModel`, region `us-east-1`, profile `balomer`. The
-  model id is the Claude Opus 5.5 inference profile that
-  `aws bedrock list-inference-profiles` shows for the account, set through the
-  `BEDROCK_MODEL_ID` environment variable.
+- **Model**: Strands `BedrockModel`, region `us-east-1`, with at most 1 024
+  output tokens. The profile comes from `AWS_PROFILE=balomer`, the region from
+  `AWS_DEFAULT_REGION=us-east-1` (refreshing an `aws login` session needs it, and
+  botocore does not read `AWS_REGION`), and the model id from the
+  `BEDROCK_MODEL_ID` environment variable. On 2026-10-23 the user chose
+  Claude Sonnet 4.6 (`us.anthropic.claude-sonnet-4-6`) for its cost; the
+  Claude 5 models are not available on the account.
 - **AgentCore**: out of scope. It would be a separate deployment.
 
 ## Alerts

@@ -28,8 +28,10 @@ replayer (services/vision) ──ws /ws/edge──▶ API (services/api, :8080) 
   so far.
 - **TV app** (`apps/tv`): draws the radar, the stats panel, the alerts and the
   report screens.
-- **Agent** (`services/agent`): the halftime report on Bedrock, through Strands,
-  called inside the API process. Not wired in this release.
+- **Agent** (`services/agent`): the halftime report, written by Claude
+  Sonnet 4.6 on Bedrock through Strands and checked by a validator. The API
+  calls it in-process when the first half ends; only metric snapshots are
+  sent.
 
 The spec is [specs/local-demo/](../specs/local-demo/); its
 [design](../specs/local-demo/design.md) holds the contracts, metrics and
@@ -77,7 +79,7 @@ machine by default. The local demo uses no video at all. See
 | `apps/capture/` | Host-side camera capture. Not used in local mode. |
 | `services/vision/` | Edge worker: SoccerTrack v2 ingest, replayer, metrics and alerts. |
 | `services/api/` | FastAPI WebSocket relay between the edge and the TV. |
-| `services/agent/` | Strands agent for the reports. Not wired yet. |
+| `services/agent/` | Strands agent that writes the halftime report on Bedrock. |
 | `packages/contracts/` | JSON Schema contracts. Source of truth for all boundary types. |
 | `infra/` | AWS CDK app in Python. Not used in local mode. |
 | `specs/` | One directory per feature: requirements, design, tasks. |
