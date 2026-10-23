@@ -99,8 +99,8 @@ Run each step from the repository root, each server in its own terminal.
    uv run uvicorn balomer_api.app:app --host 127.0.0.1 --port 8080
    ```
 
-5. Build the TV app, start the Virtual Device, forward its port 8080 to the
-   laptop and install the app (terminal 2). Keep this terminal open: the
+5. Build the TV app, start the Virtual Device, install the app and forward the
+   device's port 8080 to the laptop (terminal 2). Keep this terminal open: the
    device stops when its session ends. `vega virtual-device start` can exit 0
    after printing "Deadline reached"; then the device did not start, and its
    `virtual_device.err` says why.
@@ -110,9 +110,15 @@ Run each step from the repository root, each server in its own terminal.
    npm ci
    npm run build:app
    vega virtual-device start
+   vega run-app build/x86_64-release/balomertv_x86_64.vpkg
    vega device start-port-forwarding --port 8080 --forward false
-   vega run-app build/x86_64-release/balomertv_x86_64.vpkg com.balomer.tv.main
+   vega device is-port-forwarded --port 8080 --forward false
    ```
+
+   The last command must print `true`. Forward the port after `run-app`: a
+   forward set before it was found off later. Do not pass the app id to
+   `run-app`: Vega CLI 1.4.5 then fails with "Cannot read properties of
+   undefined (reading 'trim')" while uninstalling an app that is not there.
 
 6. Replay the first half as live (terminal 3):
 
