@@ -1,4 +1,4 @@
-import {fitPitch, toScreen} from '../src/pitch';
+import {fitPitch, fitScreen, toScreen} from '../src/pitch';
 import {RADAR_AREA} from '../src/theme';
 
 describe.each([
@@ -40,5 +40,20 @@ describe.each([
       expect(s.top).toBeGreaterThanOrEqual(54);
       expect(s.top).toBeLessThanOrEqual(1026);
     }
+  });
+});
+
+describe('fitScreen', () => {
+  it('scales the 1920x1080 layout into the window from its top-left corner', () => {
+    expect(fitScreen({width: 960, height: 540})).toEqual([
+      {translateX: -480},
+      {translateY: -270},
+      {scale: 0.5},
+    ]);
+    expect(fitScreen({width: 1920, height: 1080})).toEqual([
+      {translateX: 0},
+      {translateY: 0},
+      {scale: 1},
+    ]);
   });
 });

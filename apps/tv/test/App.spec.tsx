@@ -3,9 +3,10 @@ import 'react-native';
 import {BackHandler} from '@amazon-devices/react-native-kepler';
 import {act, render, within} from '@testing-library/react-native';
 import * as React from 'react';
-import {StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet} from 'react-native';
 
 import {App} from '../src/App';
+import {fitScreen} from '../src/pitch';
 import type {
   Alert,
   Frame,
@@ -103,6 +104,12 @@ beforeEach(() => {
   jest.useFakeTimers();
   globalThis.WebSocket = FakeSocket as unknown as typeof WebSocket;
   removeBack.mockClear();
+  // The preset's Dimensions.addEventListener returns nothing to remove.
+  jest
+    .mocked(Dimensions.addEventListener)
+    .mockReturnValue({remove: jest.fn()} as unknown as ReturnType<
+      typeof Dimensions.addEventListener
+    >);
   jest
     .mocked(BackHandler.addEventListener)
     .mockImplementation((_event, handler) => {
@@ -117,6 +124,17 @@ afterEach(() => {
 });
 
 describe('App', () => {
+  it('scales the 1920x1080 layout to the window', () => {
+    const screen = render(<App />);
+    // The preset's StyleSheet.flatten returns arrays unflattened.
+    const transform = () =>
+      Object.assign({}, ...[screen.getByTestId('screen').props.style].flat())
+        .transform;
+    expect(transform()).toEqual(fitScreen(Dimensions.get('window')));
+    send(session);
+    expect(transform()).toEqual(fitScreen(Dimensions.get('window')));
+  });
+
   it('shows the session credit on the clock bar', () => {
     const screen = render(<App />);
     send(session);
