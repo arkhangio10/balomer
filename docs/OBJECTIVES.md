@@ -5,6 +5,13 @@ Every spec, task and PR references at least one ID below. Work that serves no ob
 ## Mission
 Top clubs pay six figures a year for match analysis. Amateur coaches have no analyst at all. Balomer puts one camera above the pitch and a Fire TV in the dressing room, and delivers live tactical insight and a halftime game plan with no analyst required.
 
+## Local mode (since Oct 20)
+On Oct 20 the plan pivoted: everything runs on one laptop, and nothing is deployed to AWS except the Bedrock model call. A recorded SoccerTrack v2 match replays as live through the edge, the API relay and the Vega app. The spec is [specs/local-demo](../specs/local-demo/).
+
+- Not advanced in this release: P1 and V1-V4 (no computer vision; the tracks come from annotations), P9 (pro mode), E5, S2, S3 and S5 (no AWS deployment), and S7 (Guardrails need a CDK stack).
+- Waiting on AWS credentials: H2, P5 and P6, through task T11 (Strands with Bedrock, without AgentCore).
+- Does not apply: S6, since nobody is filmed.
+
 ## Hackathon
 | ID | Objective | Target |
 |---|---|---|
@@ -76,7 +83,8 @@ Measured first on SoccerTrack v2 annotations, then on own footage when available
 | D5 | Open Source | Contribution URL + description |
 
 ## Data and content rules
-- Live mode and demo video: own 7-a-side footage only (adults, signed consent, S6).
+- Live mode: own 7-a-side footage only (adults, signed consent, S6).
+- Demo video: SoccerTrack v2 match 117092 (CC BY 4.0, attributed), replayed as live. No own footage was recorded by Oct 11, so the demo switched to SoccerTrack v2 as planned.
 - CV development and evaluation: SoccerTrack v2 (CC BY 4.0, attributed).
 - Pro mode: SkillCorner Open Data (attributed).
 - No broadcast, YouTube or league footage anywhere, including tests.
@@ -93,6 +101,12 @@ Broadcast analysis, other sports, multi-camera, voice, full phone app, Android T
 | v0.3.0 | Oct 16 | Agent on AgentCore, halftime report (P5, P7), alerts (P4) |
 | v0.4.0 | Oct 19 | Full-time report (P6), Open Source contribution (H3), pro mode (P9, cut first), D-pad polish (P10) |
 | v1.0.0 | Oct 22 | Demo video, docs, submission (D1-D5) |
+
+## Milestones (revised Oct 20, local mode)
+| Tag | Date | Scope |
+|---|---|---|
+| v0.1.0 to v0.4.0 | | Not tagged: missed before the pivot to local mode |
+| v1.0.0 | Oct 22 | Local demo: SoccerTrack v2 replayed as live through the edge, the API relay and the Vega app (specs/local-demo, T1-T12), docs, submission (D1-D5) |
 
 ## Key dates
 - Oct 4: Open Source target decision (Vega drawing library port vs kloppy)
