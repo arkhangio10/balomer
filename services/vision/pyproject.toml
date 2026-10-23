@@ -5,6 +5,8 @@ description = "Balomer edge vision worker"
 requires-python = ">=3.12,<3.13"
 license = "Apache-2.0"
 dependencies = [
+    "ijson==3.6.0",
+    "numpy==2.5.4",
     "websockets==17.3",
 ]
 
