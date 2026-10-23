@@ -5,3 +5,10 @@ This product includes software developed for the Amazon "Build, Ship, Shape"
 Developer Hackathon.
 
 Licensed under the Apache License, Version 2.0. See the LICENSE file.
+
+The demo uses data from SoccerTrack v2
+(https://huggingface.co/datasets/atomscott/soccertrack-v2), licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0,
+https://creativecommons.org/licenses/by/4.0/). The data is not distributed
+with this product. Balomer converts its annotations into its own replay format
+when the ingest command runs.
