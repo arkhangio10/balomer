@@ -1,6 +1,6 @@
 import {BackHandler} from '@amazon-devices/react-native-kepler';
 import React, {useCallback, useEffect, useReducer, useRef} from 'react';
-import {Animated, StyleSheet, View} from 'react-native';
+import {Animated, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {AlertBanner} from './components/AlertBanner';
 import {AlertHistory} from './components/AlertHistory';
 import {Ball} from './components/Ball';
@@ -12,7 +12,7 @@ import {ReportScreen} from './components/ReportScreen';
 import {StatsPanel} from './components/StatsPanel';
 import {TeamBlock} from './components/TeamBlock';
 import {API_URL, connect} from './feed';
-import {fitPitch, toScreen} from './pitch';
+import {fitPitch, fitScreen, toScreen} from './pitch';
 import {handlesBack, initialState, reduce} from './state';
 import {
   colors,
@@ -25,6 +25,7 @@ import {
 
 export const App = () => {
   const [state, dispatch] = useReducer(reduce, initialState);
+  const dimensions = useWindowDimensions();
 
   const latest = useRef(state);
   const dim = useRef(new Animated.Value(1)).current;
@@ -64,8 +65,9 @@ export const App = () => {
   const expire = useCallback(() => dispatch({kind: 'bannerExpired'}), []);
 
   const {session, rolling, banner} = state;
+  const screenStyle = [styles.screen, {transform: fitScreen(dimensions)}];
   if (!session) {
-    return <View style={styles.screen} />;
+    return <View testID="screen" style={screenStyle} />;
   }
 
   const L = session.pitch_length_m;
@@ -73,7 +75,7 @@ export const App = () => {
   const box = fitPitch(L, W, RADAR_AREA);
 
   return (
-    <View style={styles.screen}>
+    <View testID="screen" style={screenStyle}>
       <ClockBar
         clockMs={state.clockMs}
         half={session.half}
@@ -150,7 +152,8 @@ export const App = () => {
 
 const styles = StyleSheet.create({
   screen: {
-    flex: 1,
+    width: SCREEN.width,
+    height: SCREEN.height,
     backgroundColor: colors.background,
   },
   radar: {

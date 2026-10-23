@@ -1,3 +1,5 @@
+import {SCREEN} from './theme';
+
 export interface Box {
   left: number;
   top: number;
@@ -27,4 +29,21 @@ export function toScreen(
     left: box.left + ((p.x + lengthM / 2) / lengthM) * box.width,
     top: box.top + ((p.y + widthM / 2) / widthM) * box.height,
   };
+}
+
+// Vega lays out in dp, 960x540 on a 1080p screen, so the 1920x1080 design is
+// scaled down from its top-left corner to fill the window.
+export function fitScreen(window: {
+  width: number;
+  height: number;
+}): [{translateX: number}, {translateY: number}, {scale: number}] {
+  const scale = Math.min(
+    window.width / SCREEN.width,
+    window.height / SCREEN.height,
+  );
+  return [
+    {translateX: (SCREEN.width * (scale - 1)) / 2},
+    {translateY: (SCREEN.height * (scale - 1)) / 2},
+    {scale},
+  ];
 }
