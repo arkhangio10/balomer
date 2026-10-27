@@ -6,7 +6,7 @@ requires-python = ">=3.12,<3.13"
 license = "Apache-2.0"
 dependencies = [
     "balomer-agent",
-    "fastapi==0.159.1",
+    "fastapi==0.162.0",
     "uvicorn==0.54.0",
     "websockets==17.3",
 ]
