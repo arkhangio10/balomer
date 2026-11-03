@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Balomer boundary types, generated from JSON Schema"
 requires-python = ">=3.12,<3.13"
 license = "Apache-2.0"
-dependencies = ["pydantic==2.14.1"]
+dependencies = ["pydantic==2.14.2"]
 
 [build-system]
 requires = ["hatchling"]
